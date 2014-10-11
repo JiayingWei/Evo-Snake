@@ -1,1 +1,2 @@
 Newbie Guide : http://www.pygame.org/docs/tut/newbieguide.html
+pygame window tutorial : http://www.petercollingridge.co.uk/pygame-physics-simulation/creating-pygame-window
