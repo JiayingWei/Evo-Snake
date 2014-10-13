@@ -24,7 +24,8 @@ class screen(object):
 
         start = squarefont.render("start", True, white)
         start_size = start.get_size()
-        blit_start = center_object(600, 400 - y_displacement, start_size[0], start_size[1])     #the centering mechanism is hard coded in (should fix)
+        blit_start = center_object(600, 400 - y_displacement, start_size[0], start_size[1])     
+        #I am a cheater and pretended to change the height of the screen in the centering function to displace the pieces of the menu (I will probably fix this)
         self.screen.blit(start, (blit_start[0], blit_start[1]))
 
         full = squarefont.render("full", True, white)
@@ -50,6 +51,18 @@ class screen(object):
         blit_loading = center_object(600, 400, loading_size[0], loading_size[1])     #the centering mechanism is hard coded in (should fix)
         self.screen.blit(loading, (blit_loading[0], blit_loading[1]))
         pygame.display.update()
+        class Box(object):
+            """represents a box - attributes: width , corner, color, center"""
+        box = Box()
+        box.color = blue
+        box.width = (10,10)
+        x = 0
+        for i in range(0,10):
+            box.center = center_object(600-(loading_size[0])+x, 400+100, box.width[0], box.width[1]) #major hard coded :/
+            pygame.draw.rect(self.screen, box.color, (box.center,box.width),0)
+            pygame.display.update()
+            pygame.time.wait(1000)
+            x=x+40
 
     def full_screen(self):
         """ puts Evo-Snake into full_screen (should not change scale of the game)
@@ -80,7 +93,7 @@ def evo_container():
     evo_screen.screen_color()
     evo_screen.loading_bar()
 
-    pygame.time.wait(2000)
+    pygame.time.wait(500)
 
     evo_screen.minimize_screen()
 
