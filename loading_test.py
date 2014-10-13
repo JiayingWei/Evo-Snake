@@ -16,31 +16,6 @@ class screen(object):
     def minimize_screen(self):
         """ minimizes Evo-Snake (should not change scale of the game)
         """
-        y_displacement = 100
-        pygame.font.init()
-        white = ( 255, 255, 255)
-        squarefont = pygame.font.Font('Square.ttf',50)
-        self.screen = pygame.display.set_mode((600, 400))
-
-        start = squarefont.render("start", True, white)
-        start_size = start.get_size()
-        blit_start = center_object(600, 400 - y_displacement, start_size[0], start_size[1])     #the centering mechanism is hard coded in (should fix)
-        self.screen.blit(start, (blit_start[0], blit_start[1]))
-
-        full = squarefont.render("full", True, white)
-        full_size = full.get_size()
-        blit_full = center_object(600, 400, full_size[0], full_size[1])     #the centering mechanism is hard coded in (should fix)
-        self.screen.blit(full, (blit_full[0], blit_full[1]))
-
-        quit = squarefont.render("quit", True, white)
-        quit_size = quit.get_size()
-        blit_quit = center_object(600, 400 + y_displacement, quit_size[0], quit_size[1])     #the centering mechanism is hard coded in (should fix)
-        self.screen.blit(quit, (blit_quit[0], blit_quit[1]))
-        pygame.display.update()
-
-    def loading_bar(self):
-        """ launches the loading_bar which gives the user a visual of how much of the game has loaded
-        """
         pygame.font.init()
         blue = ( 0, 0, 255)
         squarefont = pygame.font.Font('Square.ttf',50)
@@ -51,17 +26,17 @@ class screen(object):
         self.screen.blit(loading, (blit_loading[0], blit_loading[1]))
         pygame.display.update()
 
-    def full_screen(self):
-        """ puts Evo-Snake into full_screen (should not change scale of the game)
-        """
-        self.width = self.display_resolution.current_w
-        self.height = self.display_resolution.current_h
-        self.screen = pygame.display.set_mode((self.width, self.height - 40))       #problem with maximize not stretching to fill the entire screen
-        menu_options = pygame.image.load("images/start_min_quit.png").convert()
-        menu_options_size = check_size("images/start_full_quit.png")
-        blit_menu_options = center_object(self.width, self.height, menu_options_size[0], menu_options_size[1])
-        self.screen.blit(menu_options, (blit_menu_options[0], blit_menu_options[1]))
-        pygame.display.update()
+    # def full_screen(self):
+    #     """ puts Evo-Snake into full_screen (should not change scale of the game)
+    #     """
+    #     self.width = self.display_resolution.current_w
+    #     self.height = self.display_resolution.current_h
+    #     self.screen = pygame.display.set_mode((self.width, self.height - 40))       #problem with maximize not stretching to fill the entire screen
+    #     menu_options = pygame.image.load("images/start_min_quit.png").convert()
+    #     menu_options_size = check_size("images/start_full_quit.png")
+    #     blit_menu_options = center_object(self.width, self.height, menu_options_size[0], menu_options_size[1])
+    #     self.screen.blit(menu_options, (blit_menu_options[0], blit_menu_options[1]))
+    #     pygame.display.update()
 
     def screen_color(self):
         """ fills the screen with its own color
@@ -78,10 +53,6 @@ def evo_container():
 
     evo_screen = screen()
     evo_screen.screen_color()
-    evo_screen.loading_bar()
-
-    pygame.time.wait(2000)
-
     evo_screen.minimize_screen()
 
     pygame.display.flip()
@@ -90,8 +61,8 @@ def evo_container():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-            elif event.type == KEYDOWN and event.key == K_f:
-                evo_screen.full_screen()
+            # elif event.type == KEYDOWN and event.key == K_f:
+            #     evo_screen.full_screen()
             elif event.type == KEYDOWN and event.key == K_m:
                 evo_screen.minimize_screen()
 
@@ -101,6 +72,10 @@ def check_size(imagepath):
     img = Image.open(imagepath)
     width,height = img.size
     return [width,height]
+
+def check_surface_size(surface):
+    size = surface.get_size()
+    return size
 
 def find_center(width, height):
     """Finds the center of an object with a width and height
@@ -117,11 +92,28 @@ def center_object(width_outter, height_outter, width_inner, height_inner):
     upper_left_corner = [center_outter[0] - center_inner[0], center_outter[1] - center_inner[1]]
     return upper_left_corner
 
+
 evo_container()
 
 def launch_menu():
     """ launches the main menu of Evo-Snake
     """
+
+# def loading_bar(self):
+#     """ launches the loading_bar which gives the user a visual of how much of the game has loaded
+#     """
+#     pygame.font.init()
+#     blue = ( 0, 0, 255)
+#     squarefont = pygame.font.Font("Square.tff",50)
+#     loading = squarefont.render("LOADING", True, blue)
+#     self.screen = pygame.display.set_mode((600, 400))
+#     loading_size = check_size("images/start_full_quit.png")
+#     blit_loading = center_object(600, 400, menu_options_size[0], menu_options_size[1])     #the centering mechanism is hard coded in (should fix)
+#     self.screen.blit(loading, (blit_loading[0], blit_loading[1]))
+#     pygame.display.update()
+
+
+    #pygame.draw.rect(surface, (255,255,255), pygame.Rect(left,top,maxwidth*progress,height))
 
 def toggle_options():
     """ takes user input 'w,s' or 'up arrow key, down arrowkey' to toggle boxy between the menu options
