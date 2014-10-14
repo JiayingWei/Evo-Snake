@@ -17,3 +17,15 @@ class Boxy(object):
 		self.height = self.size[1]
 		self.color = color
 		# self.corner = Point(x,y)
+
+	def toggle(self, ):  #jiaying
+
+
+	def move(self, dx, dy): #anna
+		self.dx = dx
+		self.dy = dy
+
+
+	def sound():	#jiaying
+
+	def environment(): 	
