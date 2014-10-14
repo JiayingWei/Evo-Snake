@@ -11,6 +11,21 @@ class Boxy(object):
 	attributes: corner, color
 	"""
 
-	def __init__(self, corner, color):
-		self.corner = Point(x,y)
+	def __init__(self, size, color):
+		self.size = [20,20]
+		self.width = self.size[0]
+		self.height = self.size[1]
 		self.color = color
+		# self.corner = Point(x,y)
+
+	def toggle(self, ):  #jiaying
+
+
+	def move(self, dx, dy): #anna
+		self.dx = dx
+		self.dy = dy
+
+
+	def sound():	#jiaying
+
+	def environment(): 	
