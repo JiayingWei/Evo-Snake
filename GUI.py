@@ -1,4 +1,5 @@
-import sys, pygame
+import sys, pygame, os
+import evo_objects as eob
 from PIL import Image
 from pygame.locals import *
 
@@ -13,67 +14,79 @@ class screen(object):
         self.display_resolution = pygame.display.Info()     #gets the resolution of your computer monitor
         self.screen = pygame.display.set_mode((self.width, self.height))    #this statement might be causing problems with the centering during the 2nd minimize
 
-    def minimize_screen(self):
-        """ minimizes Evo-Snake (should not change scale of the game)
-        """
-        y_displacement = 100
-        pygame.font.init()
-        white = ( 255, 255, 255)
-        squarefont = pygame.font.Font('Square.ttf',50)
-        self.screen = pygame.display.set_mode((600, 400))
-
-        start = squarefont.render("start", True, white)
-        start_size = start.get_size()
-        blit_start = center_object(600, 400 - y_displacement, start_size[0], start_size[1])     
-        #I am a cheater and pretended to change the height of the screen in the centering function to displace the pieces of the menu (I will probably fix this)
-        self.screen.blit(start, (blit_start[0], blit_start[1]))
-
-        full = squarefont.render("full", True, white)
-        full_size = full.get_size()
-        blit_full = center_object(600, 400, full_size[0], full_size[1])     #the centering mechanism is hard coded in (should fix)
-        self.screen.blit(full, (blit_full[0], blit_full[1]))
-
-        quit = squarefont.render("quit", True, white)
-        quit_size = quit.get_size()
-        blit_quit = center_object(600, 400 + y_displacement, quit_size[0], quit_size[1])     #the centering mechanism is hard coded in (should fix)
-        self.screen.blit(quit, (blit_quit[0], blit_quit[1]))
-        pygame.display.update()
-
     def loading_bar(self):
         """ launches the loading_bar which gives the user a visual of how much of the game has loaded
         """
+        os.environ['SDL_VIDEO_CENTERED'] = '1'  #centers the starting postion of the window
+
         pygame.font.init()
-        blue = ( 0, 0, 255)
+
+        loading_bar_color = ( 255, 255, 255)
         squarefont = pygame.font.Font('Square.ttf',50)
-        loading = squarefont.render("LOADING", True, blue)
-        self.screen = pygame.display.set_mode((600, 400))
+        loading = squarefont.render("LOADING", True, loading_bar_color)
+        self.screen = pygame.display.set_mode((self.width, self.height))
         loading_size = loading.get_size()
-        blit_loading = center_object(600, 400, loading_size[0], loading_size[1])     #the centering mechanism is hard coded in (should fix)
-        self.screen.blit(loading, (blit_loading[0], blit_loading[1]))
+        loading_boxy = eob.Boxy([20,20],loading_bar_color)  #creates a loading boxy
+        blit_loading = center_object(self.width, self.height, loading_size[0], loading_size[1])
+        self.screen.blit(loading, (blit_loading[0], blit_loading[1] - 2*loading_boxy.height))
         pygame.display.update()
-        class Box(object):
-            """represents a box - attributes: width , corner, color, center"""
-        box = Box()
-        box.color = blue
-        box.width = (10,10)
-        x = 0
+
         for i in range(0,10):
-            box.center = center_object(600-(loading_size[0])+x, 400+100, box.width[0], box.width[1]) #major hard coded :/
-            pygame.draw.rect(self.screen, box.color, (box.center,box.width),0)
+            loading_boxy_start = center_object(self.width, self.height, loading_boxy.width * 10, loading_boxy.height)
+            loading_boxy_start = [loading_boxy_start[0] + loading_boxy.width * i, loading_boxy_start[1]]
+            pygame.draw.rect(self.screen, loading_boxy.color, (loading_boxy_start,loading_boxy.size),0)
             pygame.display.update()
-            pygame.time.wait(1000)
-            x=x+40
+            pygame.time.wait(300)
+
+    def minimize_screen(self):
+        """ minimizes Evo-Snake (should not change scale of the game)
+        """
+        pygame.font.init()
+        text_color = ( 255, 255, 255)
+        squarefont = pygame.font.Font('Square.ttf',40)
+        self.screen = pygame.display.set_mode((600, 400))
+
+        full = squarefont.render("fullscreen", True, text_color)
+        full_size = full.get_size()
+        blit_full = center_object(600, 400, full_size[0], full_size[1])     #the centering mechanism depends on the center of the middle text item
+        self.screen.blit(full, (blit_full[0], blit_full[1]))
+
+        start = squarefont.render("start", True, text_color)
+        start_size = start.get_size()
+        blit_start = [blit_full[0], blit_full[1] - full.get_height()]
+        self.screen.blit(start, (blit_start[0], blit_start[1]))
+
+        quit = squarefont.render("quit", True, text_color)
+        quit_size = quit.get_size()
+        blit_quit = [blit_full[0], blit_full[1] + full.get_height()]
+        self.screen.blit(quit, (blit_quit[0], blit_quit[1]))
+        pygame.display.update()
 
     def full_screen(self):
         """ puts Evo-Snake into full_screen (should not change scale of the game)
         """
         self.width = self.display_resolution.current_w
         self.height = self.display_resolution.current_h
-        self.screen = pygame.display.set_mode((self.width, self.height - 40))       #problem with maximize not stretching to fill the entire screen
-        menu_options = pygame.image.load("images/start_min_quit.png").convert()
-        menu_options_size = check_size("images/start_full_quit.png")
-        blit_menu_options = center_object(self.width, self.height, menu_options_size[0], menu_options_size[1])
-        self.screen.blit(menu_options, (blit_menu_options[0], blit_menu_options[1]))
+
+        pygame.font.init()
+        text_color = ( 255, 255, 255)
+        squarefont = pygame.font.Font('Square.ttf',40)
+        self.screen = pygame.display.set_mode((self.width, self.height),pygame.FULLSCREEN)
+
+        minimize = squarefont.render("minimize", True, text_color)
+        full_size = minimize.get_size()
+        blit_full = center_object(self.width, self.height, full_size[0], full_size[1])     #the centering mechanism depends on the center of the middle text item
+        self.screen.blit(minimize, (blit_full[0], blit_full[1]))
+
+        start = squarefont.render("start", True, text_color)
+        start_size = start.get_size()
+        blit_start = [blit_full[0], blit_full[1] - minimize.get_height()]
+        self.screen.blit(start, (blit_start[0], blit_start[1]))
+
+        quit = squarefont.render("quit", True, text_color)
+        quit_size = quit.get_size()
+        blit_quit = [blit_full[0], blit_full[1] + minimize.get_height()]
+        self.screen.blit(quit, (blit_quit[0], blit_quit[1]))
         pygame.display.update()
 
     def screen_color(self):
