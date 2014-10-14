@@ -1,12 +1,13 @@
 import sys, pygame
 from PIL import Image
 from pygame.locals import *
+pygame.font.init()
 
 class screen(object):
     """ controls everything to do with the windows screen_size
         attributes: width, height, color
     """
-    def __init__(self, width = 600, height = 400, color = (0, 0, 0)):
+    def __init__(self, width = 600, height = 400, color = (0, 0, 0), font = pygame.font.Font('Square.ttf',50)):
         self.width = width
         self.height = height
         self.color = color
@@ -19,10 +20,10 @@ class screen(object):
         y_displacement = 100
         pygame.font.init()
         white = ( 255, 255, 255)
-        squarefont = pygame.font.Font('Square.ttf',50)
+        #squarefont = pygame.font.Font('Square.ttf',50)
         self.screen = pygame.display.set_mode((600, 400))
 
-        start = squarefont.render("start", True, white)
+        start = screen.font.render("start", True, white)
         start_size = start.get_size()
         blit_start = center_object(600, 400 - y_displacement, start_size[0], start_size[1])     
         #I am a cheater and pretended to change the height of the screen in the centering function to displace the pieces of the menu (I will probably fix this)

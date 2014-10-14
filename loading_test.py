@@ -26,6 +26,20 @@ class screen(object):
         self.screen.blit(loading, (blit_loading[0], blit_loading[1]))
         pygame.display.update()
 
+        class Box(object):
+            """represents a box - attributes: width , corner, color, center"""
+        box = Box()
+        box.color = blue
+        box.width = (10,10)
+        x = 0
+        for i in range(0,10):
+            box.center = center_object(600-(loading_size[0])+x, 400+100, box.width[0], box.width[1]) #major hard coded :/
+            pygame.draw.rect(self.screen, box.color, (box.center,box.width),0)
+            pygame.display.update()
+            pygame.time.wait(1000)
+            x=x+40
+
+
     # def full_screen(self):
     #     """ puts Evo-Snake into full_screen (should not change scale of the game)
     #     """
