@@ -11,15 +11,24 @@ class Boxy(object):
 	attributes: corner, color
 	"""
 
-	def __init__(self, size, color):
+	def __init__(self, size, color, x, y):
 		self.size = [20,20]
+		self.x = x
+		self.y = y
 		self.width = self.size[0]
 		self.height = self.size[1]
 		self.color = color
-		# self.corner = Point(x,y)
 
-	def toggle(self, ):  #jiaying
-
+	def toggle(self, position = 1):  #jiaying
+		self.position = position
+		self.x = x
+		self.y = y
+		if position == 1:
+			move to position 1
+		if position == 2:
+			move to position 2
+		if position == 3:
+			move to position 3
 
 	def move(self, dx, dy): #anna
 		self.dx = dx
