@@ -1,5 +1,4 @@
 import sys, pygame, os
-import evo_objects as eob
 from PIL import Image
 from pygame.locals import *
 
@@ -61,6 +60,10 @@ class screen(object):
         blit_quit = [blit_full[0], blit_full[1] + full.get_height()]
         self.screen.blit(quit, (blit_quit[0], blit_quit[1]))
         pygame.display.update()
+
+        toggle_boxy = evo.Boxy([20,20], (255, 255, 255))
+
+
 
     def full_screen(self):
         """ puts Evo-Snake into full_screen (should not change scale of the game)
@@ -142,6 +145,16 @@ def center_object(width_outter, height_outter, width_inner, height_inner):
     center_inner = find_center(width_inner, height_inner)
     upper_left_corner = [center_outter[0] - center_inner[0], center_outter[1] - center_inner[1]]
     return upper_left_corner
+
+def centerWidth(widthOuter, widthInner):
+    """Returns the x location of the upper left corner of the item you want to center horizontally in a larger item
+    """
+    return widthOuter/2 - widthInner/2
+
+def center_height(heightOuter, heightInner):
+    """Returns the y location of the upper left corner of the item you want to center vertically in a larger item
+    """
+    return heightOuter/2 - heightInner/2
 
 evo_container()
 
