@@ -97,8 +97,8 @@ class Menu:
 	def Fullscreen(self):
 		"""Encodes the state of a fullscreen in the game
 		"""
-		self.width = display_resolution.current_w
-		self.height = display_resolution.current_h
+		self.width = self.display_resolution.current_w
+		self.height = self.display_resolution.current_h
 
 		self.item1 = menuItem("minimize",self.width, self.height)
 		self.item2 = menuItem("start",self.width, self.height - 2*self.item1.height)
@@ -132,6 +132,8 @@ class EvoSnakeView:
 		self.model = model
 
 	def drawLoading(self):
+		"""Draws the loading bar
+		"""
 		os.environ['SDL_VIDEO_CENTERED'] = '1'  #centers the starting postion of the window
 		
 		self.model.menu.Minimized()
@@ -151,10 +153,12 @@ class EvoSnakeView:
 			pygame.time.wait(300)
 		
 	def drawMenu(self):	
+		"""Draws the main menu
+		"""
 		if self.model.state == 'Minimized' and self.model.menu.width != 600:
 			self.model.menu.Minimized()
 			self.screen = pygame.display.set_mode((self.model.menu.width, self.model.menu.height))
-		elif self.model.state == 'Fullscreen':
+		elif self.model.state == 'Fullscreen' and self.model.menu.width != self.model.menu.display_resolution.current_w:
 			self.model.menu.Fullscreen()
 			self.screen = pygame.display.set_mode((model.menu.width, model.menu.height), pygame.FULLSCREEN)
 
@@ -178,7 +182,8 @@ class EvoSnakeController:
 		self.model = model
 
 	def handle_menu_key_event(self, event):
-		# print self.model.menu.boxy.position
+		"""Handles all of the key events while in the main menu
+		"""
 		if event.type != KEYDOWN:
 			return
 		if event.key == pygame.K_UP or event.key == pygame.K_w:
@@ -193,7 +198,9 @@ class EvoSnakeController:
 			elif self.model.menu.boxy.position == 2 and self.model.state == 'Fullscreen':
 				self.model.state = 'Minimized'
 			elif self.model.menu.boxy.position == 3:
-				running = False
+				pygame.quit()
+		if event.key == K_ESCAPE:
+			pygame.quit()
 
 def centerWidth(widthOuter, widthInner):
 	"""Returns the x location of the upper left corner of the item you want to center horizontally in a larger item
