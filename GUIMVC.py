@@ -1,14 +1,15 @@
-import sys, pygame, os
+import sys, pygame, os, random
 from PIL import Image
 from pygame.locals import *
 
 class EvoSnakeModel:
 	"""Encodes the game state
 	"""
-	def __init__(self,backgroundColor = (0,0,0),state = 'Minimized'):
+	def __init__(self,backgroundColor = (0,0,0),screenstate = 'Minimized', gamestate = 'Menuing'):
 		self.backgroundColor = backgroundColor
-		self.menu = Menu()
-		self.state = state
+		self.menu = ScreenGUI()
+		self.screenstate = screenstate	#state of the screen size (default vs fullscreen)
+		self.gamestate = gamestate	#state of the game (in menu vs in game)
 
 class Boxy:
 	"""Encodes the state of a boxy in the game
@@ -24,10 +25,14 @@ class Boxy:
 
 
 	def move(self, dx, dy): #anna
+		"""Moves boxy dx and dy
+		"""
 		self.x = self.x + dx
 		self.y = self.y + dy
 
 	def menuToggle(self, direction, dy, position):
+		"""Encodes the state and location of the menu boxy
+		"""
 		if direction == 'up': 
 			if self.position == 1:
 				self.move(0, 2*dy)
@@ -49,13 +54,49 @@ class Boxy:
 				self.move(0, -2*dy)
 				self.position = 1
 
+	def randomMove(self, screenWidth, screenHeight):
+		"""Creates a random boxy on screen
+		"""
+		self.x = random.randrange(0, screenWidth, self.width)
+		self.y = random.randrange(0, screenHeight, self.width)
 
-	# def sound(self):	#jiaying
-	# """
-	# """
-	# def environment(self): 	
-	# """
-	# """
+	def randomColor(self,stage = 1):
+		if self.stage == 1:
+			stage1Colors = (255, 255, 255)
+			self.bgcolor = (0, 0, 0)
+			self.color = stage1Colors
+		if self.stage == 2:
+			stage2Colors = [(255, 204, 204), 
+							(255, 255, 204),
+							(204, 255, 204),
+							(204, 255, 255),
+							(229, 204, 255)]
+			self.bgcolor = (0, 0, 0)
+			self.color = stage2Colors[random.randrange(0,len(stage2Colors))]
+		if self.stage == 3:
+			stage3Colors = [(255, 153, 153), 
+							(255, 255, 153),
+							(153, 255, 153),
+							(153, 255, 255),
+							(204, 153, 255)]
+			self.bgcolor = [(51, 0, 0),
+							(0, 51, 0),
+							(0, 0, 51),
+							(51, 0, 25)]
+			self.bgcolor = self.bgcolor[random.randrange(0, len(self.bgcolor))]
+			self.color = stage3Colors[random.randrange(0,len(stage3Colors))]
+		if self.stage == 4:
+			stage4Colors = [(255, 102, 102), 
+							(255, 255, 102),
+							(102, 255, 102),
+							(102, 255, 255),
+							(178, 102, 255)]
+			self.bgcolor = [(153, 0, 0),
+							(0, 153, 0),
+							(0, 0, 153),
+							(153, 0, 153)]
+			self.bgcolor = self.bgcolor[random.randrange(0, len(self.bgcolor))]
+			self.color = stage4Colors[random.randrange(0,len(stage4Colors))]
 
 class menuItem:
 	"""Encodes the state of a menu item in the game
@@ -70,8 +111,8 @@ class menuItem:
 		self.y = centerHeight(menuHeight, self.height) + dy
 
 
-class Menu:
-	"""Encodes the state of a menu in the game
+class ScreenGUI:
+	"""Encodes the state of a ScreenGUI in the game
 	"""
 	def __init__(self, width = 600, height = 400, textColor = (255,255,255)):
 		self.width = width
@@ -82,7 +123,7 @@ class Menu:
 
 
 	def Minimized(self):
-		"""Encodes the state of a minimized screen in the game
+		"""Encodes the screenstate of a minimized screen in the game
 		"""
 		self.width = 600
 		self.height = 400
@@ -120,10 +161,10 @@ class Menu:
 		self.textx = centerWidth(self.width, self.textwidth)
 		self.texty = centerHeight(self.height, self.textheight) - 2 * self.boxy.height
 
-	# class Toggle:
-	# """Encodes the state of the boxy toggle in the menu
-	# """
-
+	def Gaming(self):
+		"""Encodes the state of the game as its running
+		"""
+		self.surpriseBoxy = Boxy()
 
 class EvoSnakeView:
 	"""A view of Evo-Snake rendered in a pygame window
@@ -155,10 +196,10 @@ class EvoSnakeView:
 	def drawMenu(self):	
 		"""Draws the main menu
 		"""
-		if self.model.state == 'Minimized' and self.model.menu.width != 600:
+		if self.model.screenstate == 'Minimized' and self.model.menu.width != 600:
 			self.model.menu.Minimized()
 			self.screen = pygame.display.set_mode((self.model.menu.width, self.model.menu.height))
-		elif self.model.state == 'Fullscreen' and self.model.menu.width != self.model.menu.display_resolution.current_w:
+		elif self.model.screenstate == 'Fullscreen' and self.model.menu.width != self.model.menu.display_resolution.current_w:
 			self.model.menu.Fullscreen()
 			self.screen = pygame.display.set_mode((model.menu.width, model.menu.height), pygame.FULLSCREEN)
 
@@ -171,6 +212,16 @@ class EvoSnakeView:
 		pygame.draw.rect(self.screen, self.model.menu.boxy.color, ((self.model.menu.boxy.x, self.model.menu.boxy.y), self.model.menu.boxy.size),0)
 
 		pygame.display.update()
+
+	def drawGame(self):
+		"""Draws the game
+		"""
+		self.screen.fill(model.backgroundColor)
+
+		pygame.draw.rect(self.screen, self.model.menu.surpriseBoxy.color, ((self.model.menu.surpriseBoxy.x, self.model.menu.surpriseBoxy.y), self.model.menu.surpriseBoxy.size),0)
+
+		pygame.display.update()
+
 
 	#blits all the things
 
@@ -192,15 +243,32 @@ class EvoSnakeController:
 			self.model.menu.boxy.menuToggle('down', self.model.menu.item1.height, self.model.menu.boxy.position)
 		if event.key == pygame.K_a or event.key == pygame.K_d or event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_RETURN:
 			if self.model.menu.boxy.position == 1:
-				print 'Start Game Placeholder'
-			elif self.model.menu.boxy.position == 2 and self.model.state == 'Minimized':
-				self.model.state = 'Fullscreen'
-			elif self.model.menu.boxy.position == 2 and self.model.state == 'Fullscreen':
-				self.model.state = 'Minimized'
+				self.model.gamestate = 'Gaming'
+				self.model.menu.Gaming()
+			elif self.model.menu.boxy.position == 2 and self.model.screenstate == 'Minimized':
+				self.model.screenstate = 'Fullscreen'
+			elif self.model.menu.boxy.position == 2 and self.model.screenstate == 'Fullscreen':
+				self.model.screenstate = 'Minimized'
 			elif self.model.menu.boxy.position == 3:
 				pygame.quit()
 		if event.key == K_ESCAPE:
 			pygame.quit()
+
+	def handle_game_key_event(self,event):
+		"""Handles all of the key events while in Gaming mode
+		"""
+		if event.type != KEYDOWN:
+			return
+		if event.key == pygame.K_r:
+			self.model.menu.surpriseBoxy.stage = 4
+			self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
+			self.model.menu.surpriseBoxy.randomColor(self.model.menu.surpriseBoxy.stage)
+			self.model.backgroundColor = self.model.menu.surpriseBoxy.bgcolor
+
+		if event.key == K_ESCAPE:
+			pygame.quit()
+
+
 
 def centerWidth(widthOuter, widthInner):
 	"""Returns the x location of the upper left corner of the item you want to center horizontally in a larger item
@@ -239,14 +307,18 @@ if __name__ == '__main__':
 	running = True
 
 	view.drawLoading()
-
+	view.drawMenu()
 	while running:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
-			if event.type == KEYDOWN:
+			if event.type == KEYDOWN and model.gamestate == 'Menuing':
 				controller.handle_menu_key_event(event)
-			view.drawMenu()
+				view.drawMenu()
+			if event.type ==KEYDOWN and model.gamestate == 'Gaming':
+				controller.handle_game_key_event(event)
+				view.drawGame()
+			
 
 
 	pygame.quit()
