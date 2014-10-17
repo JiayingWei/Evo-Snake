@@ -16,9 +16,9 @@ class Boxy(object):
 		self.width = self.size[0]
 		self.height = self.size[1]
 		self.color = color
-		# self.corner = Point(x,y)
+		self.corner = Point(x,y)
 
-	def toggle(self, ):  #jiaying
+	def toggle(self ):  #jiaying
 
 
 	def move(self, dx, dy): #anna
