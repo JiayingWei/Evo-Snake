@@ -11,7 +11,7 @@ class Boxy(object):
 	attributes: corner, color
 	"""
 
-	def __init__(self, size, color, x = 0, y = 0):
+	def __init__(self, size, color, x = 0, y = 0, ):
 		self.size = [20,20]
 		self.x = x
 		self.y = y
