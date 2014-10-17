@@ -14,7 +14,7 @@ class EvoSnakeModel:
 class Boxy:
 	"""Encodes the state of a boxy in the game
 	"""
-	def __init__(self, color = (255, 255, 255), x = 0, y = 0, position = 1):
+	def __init__(self, color = (255, 255, 255), x = 0, y = 0, position = 1, stage = 1):
 		self.size = (20,20)
 		self.width = self.size[0]
 		self.height = self.size[1]
@@ -22,6 +22,8 @@ class Boxy:
 		self.x = x
 		self.y = y
 		self.position = position
+		self.stage = 1
+		self.counter = 1
 
 
 	def move(self, dx, dy): #anna
@@ -60,7 +62,7 @@ class Boxy:
 		self.x = random.randrange(0, screenWidth, self.width)
 		self.y = random.randrange(0, screenHeight, self.width)
 
-	def randomColor(self,stage = 1):
+	def randomColor(self):
 		if self.stage == 1:
 			stage1Colors = (255, 255, 255)
 			self.bgcolor = (0, 0, 0)
@@ -97,6 +99,54 @@ class Boxy:
 							(153, 0, 153)]
 			self.bgcolor = self.bgcolor[random.randrange(0, len(self.bgcolor))]
 			self.color = stage4Colors[random.randrange(0,len(stage4Colors))]
+
+	def randomMusic(self, stage = 1, counter = 0):
+		if self.stage == 1:
+			if self.counter == 0:
+				self.counter = self.counter + 1
+			elif self.counter == 1:
+				self.music = []
+				self.counter = self.counter + 1
+			elif self.counter == 2:
+				self.music.append('/music/percussion/base/')
+				self.counter = self.counter + 1
+			elif self.counter == 3:
+				self.music.append('/music/percussion/extra/')
+				self.counter = self.counter + 1
+			elif self.counter == 4:
+				self.music.append('/music/percussion/extra/')
+				self.stage = self.stage + 1
+				self.counter = 0
+		if self.stage == 2:
+			if self.counter == 0:
+				self.counter = self.counter + 1
+			elif self.counter == 1:
+				self.music.append('/music/accompaniment/major/')
+				self.counter = self.counter + 1
+			elif self.counter == 2:
+				self.music.append('/music/melody/major')
+				self.counter = self.counter + 1
+			elif self.counter == 3:
+				self.music.append('/music/accompaniment/major/')
+				self.counter = self.counter + 1		
+			elif self.counter == 4:
+				self.stage = self.stage + 1
+				self.counter = 0
+		if self.stage == 3:
+			if self.counter == 0:
+				self.counter = self.counter + 1
+			elif self.counter == 1:
+				self.counter = self.counter + 1
+			elif self.counter == 2:
+				self.music.append('/music/melody/major')
+				self.counter = self.counter + 1
+			elif self.counter == 3:
+				self.music.append('/music/accompaniment/major/')
+				self.counter = self.counter + 1		
+			elif self.counter == 4:
+				self.music.append('/music/accompaniment/major/')
+				self.stage = self.stage + 1
+				self.counter = 0
 
 class menuItem:
 	"""Encodes the state of a menu item in the game
@@ -169,8 +219,9 @@ class ScreenGUI:
 class EvoSnakeView:
 	"""A view of Evo-Snake rendered in a pygame window
 	"""
-	def __init__(self, model):
+	def __init__(self, model, controller):
 		self.model = model
+		self.controller = controller
 
 	def drawLoading(self):
 		"""Draws the loading bar
@@ -186,12 +237,12 @@ class EvoSnakeView:
 
 		pygame.display.update()
 
-		for i in range(0,10):
-			loading_boxy_start = centerObject(self.model.menu.width, self.model.menu.height, self.model.menu.lboxy.width * 10, self.model.menu.lboxy.height)
-			loading_boxy_start = [loading_boxy_start[0] + self.model.menu.lboxy.width * i, loading_boxy_start[1]]
-			pygame.draw.rect(self.screen, self.model.menu.lboxy.color, (loading_boxy_start,self.model.menu.lboxy.size),0)
-			pygame.display.update()
-			pygame.time.wait(300)
+		# for i in range(0,10):
+		# 	loading_boxy_start = centerObject(self.model.menu.width, self.model.menu.height, self.model.menu.lboxy.width * 10, self.model.menu.lboxy.height)
+		# 	loading_boxy_start = [loading_boxy_start[0] + self.model.menu.lboxy.width * i, loading_boxy_start[1]]
+		# 	pygame.draw.rect(self.screen, self.model.menu.lboxy.color, (loading_boxy_start,self.model.menu.lboxy.size),0)
+		# 	pygame.display.update()
+		# 	pygame.time.wait(300)
 		
 	def drawMenu(self):	
 		"""Draws the main menu
@@ -220,6 +271,11 @@ class EvoSnakeView:
 
 		pygame.draw.rect(self.screen, self.model.menu.surpriseBoxy.color, ((self.model.menu.surpriseBoxy.x, self.model.menu.surpriseBoxy.y), self.model.menu.surpriseBoxy.size),0)
 
+		if hasattr(self.model.menu.surpriseBoxy, 'music') == True:
+			path = loadRandomSong(self.model.menu.surpriseBoxy.music)
+			for song in range(len(self.model.menu.surpriseBoxy.music)):
+				orchestra = pygame.mixer.Sound(os.path.join('data', path[song]))
+				orchestra.play()
 		pygame.display.update()
 
 
@@ -260,10 +316,13 @@ class EvoSnakeController:
 		if event.type != KEYDOWN:
 			return
 		if event.key == pygame.K_r:
-			self.model.menu.surpriseBoxy.stage = 4
 			self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
-			self.model.menu.surpriseBoxy.randomColor(self.model.menu.surpriseBoxy.stage)
+			self.model.menu.surpriseBoxy.randomColor()
+			self.model.menu.surpriseBoxy.randomMusic()
 			self.model.backgroundColor = self.model.menu.surpriseBoxy.bgcolor
+			if len(self.model.menu.surpriseBoxy.music) == True: 
+				self.songlist = loadRandomSong(self.model.menu.surpriseBoxy.music)
+				print loadRandomSong(self.model.menu.surpriseBoxy.music)
 
 		if event.key == K_ESCAPE:
 			pygame.quit()
@@ -295,14 +354,30 @@ def centerObject(width_outter, height_outter, width_inner, height_inner):
 	upper_left_corner = [center_outter[0] - center_inner[0], center_outter[1] - center_inner[1]]
 	return upper_left_corner
 
+def loadRandomSong(sheetMusic):
+	path = sheetMusic
+	for song in range(len(sheetMusic)):
+		if 'percussion' in sheetMusic[song] and 'base' in sheetMusic[song]:
+			path[song] = sheetMusic[song] + str(random.randrange(1,4)) + '.mid'
+		elif 'percussion' in sheetMusic[song] and 'extra' in sheetMusic[song]:
+			path[song] = sheetMusic[song] + str(random.randrange(1,9)) + '.mid'
+		elif 'accompaniment' in sheetMusic[song] and 'major' in sheetMusic[song]: 
+			path[song] = sheetMusic[song] + str(random.randrange(1,6)) + '.mid'
+		elif 'melody' in sheetMusic[song] and 'major' in sheetMusic[song]: 
+			path[song] = sheetMusic[song] + str(random.randrange(1,6)) + '.mid'
+		elif 'jazz' in sheetMusic[song]: 
+			path[song] = sheetMusic[song] + str(random.randrange(1,7)) + '.mid'
+	return path
+
 
 if __name__ == '__main__':
+	pygame.mixer.pre_init(44100, -16, 2, 2048)
 	pygame.init()
 	pygame.font.init()
 
 	model = EvoSnakeModel()
-	view = EvoSnakeView(model)
 	controller = EvoSnakeController(model)
+	view = EvoSnakeView(model,controller)
 
 	running = True
 
