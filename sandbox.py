@@ -4,10 +4,20 @@ Unfortunately, you have to CTRL-C from the command line to quit it.
 GUI will initialize the screen for you.
 """
 
-import pygame
-from pygame.locals import *
+import pygame, os, sys
 
 pygame.init()
-fpsClock = pygame.time.Clock()
+pygame.mixer.init(frequency = 1000)
+path = "music/percussion/base/2.wav"
+orchestra = pygame.mixer.Sound(path)
+print(os.path.exists(path))
 
-windowSurfaceObj = pygame.display.set_mode((640, 480))
+
+running = True
+
+while running == True:
+	orchestra.play()
+
+	for event in pygame.event.get():
+		if event.key == K_ESCAPE:
+			pygame.quit()
