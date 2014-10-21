@@ -1,4 +1,4 @@
-import sys, pygame, os, random
+import sys, pygame, os, random, time
 from PIL import Image
 from pygame.locals import *
 
@@ -10,6 +10,7 @@ class EvoSnakeModel:
 		self.menu = ScreenGUI()
 		self.screenstate = screenstate	#state of the screen size (default vs fullscreen)
 		self.gamestate = gamestate	#state of the game (in menu vs in game)
+		self.timestart = time.time()
 
 class Boxy:
 	"""Encodes the state of a boxy in the game
@@ -24,7 +25,7 @@ class Boxy:
 		self.position = position
 		self.stage = 1
 		self.counter = 1
-
+		self.orchestra = []
 
 	def move(self, dx, dy): #anna
 		"""Moves boxy dx and dy
@@ -111,7 +112,6 @@ class Boxy:
 				self.music.append('music/percussion/base/')
 				self.counter = self.counter + 1
 			elif self.counter == 3:
-				self.music.append('music/percussion/extra/')
 				self.counter = self.counter + 1
 			elif self.counter == 4:
 				self.music.append('music/percussion/extra/')
@@ -124,10 +124,8 @@ class Boxy:
 				self.music.append('music/accompaniment/major/')
 				self.counter = self.counter + 1
 			elif self.counter == 2:
-				self.music.append('music/melody/major')
 				self.counter = self.counter + 1
 			elif self.counter == 3:
-				self.music.append('music/accompaniment/major/')
 				self.counter = self.counter + 1		
 			elif self.counter == 4:
 				self.stage = self.stage + 1
@@ -138,13 +136,11 @@ class Boxy:
 			elif self.counter == 1:
 				self.counter = self.counter + 1
 			elif self.counter == 2:
-				self.music.append('music/melody/major')
+				self.music.append('music/melody/major/')
 				self.counter = self.counter + 1
 			elif self.counter == 3:
-				self.music.append('music/accompaniment/major/')
 				self.counter = self.counter + 1		
 			elif self.counter == 4:
-				self.music.append('music/accompaniment/major/')
 				self.stage = self.stage + 1
 				self.counter = 0
 
@@ -215,6 +211,7 @@ class ScreenGUI:
 		"""Encodes the state of the game as its running
 		"""
 		self.surpriseBoxy = Boxy()
+		self.surpriseBoxy.randomMove(self.width, self.height)
 
 class EvoSnakeView:
 	"""A view of Evo-Snake rendered in a pygame window
@@ -271,11 +268,10 @@ class EvoSnakeView:
 
 		pygame.draw.rect(self.screen, self.model.menu.surpriseBoxy.color, ((self.model.menu.surpriseBoxy.x, self.model.menu.surpriseBoxy.y), self.model.menu.surpriseBoxy.size),0)
 
-		if hasattr(self.model.menu.surpriseBoxy, 'music') == True and len(self.model.menu.surpriseBoxy.music) >= 1:
-			orchestra = []
-			for song in range(len(self.model.menu.surpriseBoxy.music)):
-				orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[song]))
-				orchestra[song].play(-1)
+		if hasattr(self.model.menu.surpriseBoxy, 'music') == True and now - self.model.timestart > 6 and len(self.model.menu.surpriseBoxy.music) >= 1:
+			self.model.timestart = now
+			self.model.menu.surpriseBoxy.orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[-1]))
+			self.model.menu.surpriseBoxy.orchestra[-1].play(-1)
 		pygame.display.update()
 
 	#blits all the things
@@ -331,9 +327,9 @@ class EvoSnakeController:
 		elif 'percussion' in sheetMusic and 'extra' in sheetMusic:
 			path = sheetMusic + str(random.randrange(1,9)) + '.wav'
 		elif 'accompaniment' in sheetMusic and 'major' in sheetMusic: 
-			path = sheetMusic + str(random.randrange(1,6)) + '.wav'
+			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
 		elif 'melody' in sheetMusic and 'major' in sheetMusic: 
-			path = sheetMusic + str(random.randrange(1,6)) + '.wav'
+			path = sheetMusic + str(random.randrange(1,5)) + '.wav'
 		elif 'jazz' in sheetMusic[song]: 
 			path = sheetMusic + str(random.randrange(1,7)) + '.wav'
 		return path
@@ -380,6 +376,9 @@ if __name__ == '__main__':
 	view.drawLoading()
 	view.drawMenu()
 	while running:
+		now = time.time()
+		if now - model.timestart > 6:
+			view.drawGame()
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
@@ -387,6 +386,7 @@ if __name__ == '__main__':
 				controller.handle_menu_key_event(event)
 				view.drawMenu()
 			if event.type ==KEYDOWN and model.gamestate == 'Gaming':
+
 				controller.handle_game_key_event(event)
 				view.drawGame()
 			
