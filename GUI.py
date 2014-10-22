@@ -121,9 +121,9 @@ class Boxy:
 			if self.counter == 0:
 				self.counter = self.counter + 1
 			elif self.counter == 1:
-				self.music.append('music/accompaniment/major/')
 				self.counter = self.counter + 1
 			elif self.counter == 2:
+				self.music.append('music/accompaniment/major/')
 				self.counter = self.counter + 1
 			elif self.counter == 3:
 				self.counter = self.counter + 1		
@@ -143,6 +143,7 @@ class Boxy:
 			elif self.counter == 4:
 				self.stage = self.stage + 1
 				self.counter = 0
+
 
 class menuItem:
 	"""Encodes the state of a menu item in the game
@@ -194,7 +195,6 @@ class ScreenGUI:
 		self.boxy = Boxy()
 		self.boxy = Boxy((255,255,255), self.item1.x - 2*self.boxy.width, centerHeight(self.item2.height,  self.boxy.height) + self.item2.y)
 
-
 	def Loading(self):
 		"""Encodes the state of the loading screen in the game
 		"""
@@ -219,6 +219,7 @@ class EvoSnakeView:
 	def __init__(self, model, controller):
 		self.model = model
 		self.controller = controller
+		self.numSongs = 0
 
 	def drawLoading(self):
 		"""Draws the loading bar
@@ -329,7 +330,7 @@ class EvoSnakeController:
 		elif 'accompaniment' in sheetMusic and 'major' in sheetMusic: 
 			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
 		elif 'melody' in sheetMusic and 'major' in sheetMusic: 
-			path = sheetMusic + str(random.randrange(1,5)) + '.wav'
+			path = sheetMusic + str(random.randrange(1,10)) + '.wav'
 		elif 'jazz' in sheetMusic[song]: 
 			path = sheetMusic + str(random.randrange(1,7)) + '.wav'
 		return path
