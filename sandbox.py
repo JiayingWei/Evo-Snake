@@ -4,10 +4,12 @@ Unfortunately, you have to CTRL-C from the command line to quit it.
 GUI will initialize the screen for you.
 """
 
-import pygame
-from pygame.locals import *
+import time
 
-pygame.init()
-fpsClock = pygame.time.Clock()
-
-windowSurfaceObj = pygame.display.set_mode((640, 480))
+start = time.time()
+end = start
+for counter in range(6):
+	while end - start < 6:
+		end = time.time()
+	start = time.time()
+	print counter + 1

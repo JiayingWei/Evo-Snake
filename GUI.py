@@ -292,6 +292,7 @@ class EvoSnakeView:
 		self.screen.fill(model.backgroundColor)
 
 		pygame.draw.rect(self.screen, self.model.menu.surpriseBoxy.color, ((self.model.menu.surpriseBoxy.x, self.model.menu.surpriseBoxy.y), self.model.menu.surpriseBoxy.size),0)
+		
 		for i in range (len(self.model.menu.boxlist)):
 			pygame.draw.rect(self.screen, (0,255,0), ((self.model.menu.boxlist[i].x , self.model.menu.boxlist[i].y), self.model.menu.boxlist[i].size) ,0)
 		pygame.time.wait(50)
@@ -346,6 +347,7 @@ class EvoSnakeController:
 			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'wav' not in self.model.menu.surpriseBoxy.music[-1]: 
 				self.model.menu.surpriseBoxy.music[-1] = self.loadRandomSong(self.model.menu.surpriseBoxy.music[-1])
 				print self.model.menu.surpriseBoxy.music[-1]
+
 		if event.key == K_ESCAPE:
 			pygame.quit()
 		if event.key == pygame.K_d:

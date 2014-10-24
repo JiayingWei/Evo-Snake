@@ -271,16 +271,14 @@ class EvoSnakeView:
 
 		pygame.draw.rect(self.screen, self.model.menu.surpriseBoxy.color, ((self.model.menu.surpriseBoxy.x, self.model.menu.surpriseBoxy.y), self.model.menu.surpriseBoxy.size),0)
 
-		if hasattr(self.model.menu.surpriseBoxy, 'music') == True:
-			path = loadRandomSong(self.model.menu.surpriseBoxy.music)
+		if hasattr(self.model.menu.surpriseBoxy, 'music') == True and len(self.model.menu.surpriseBoxy.music) >= 1:
+			orchestra = []
 			for song in range(len(self.model.menu.surpriseBoxy.music)):
-				orchestra = pygame.mixer.Sound(os.path.join('data', path[song]))
-				orchestra.play()
+				orchestra.append(pygame.mixer.Sound(os.path.join('data', self.model.menu.surpriseBoxy.music[song])))
+				orchestra[song].play()
 		pygame.display.update()
 
-
 	#blits all the things
-
 
 class EvoSnakeController:
 	"""Defines all the inputs that Evo-Snake takes
@@ -320,9 +318,8 @@ class EvoSnakeController:
 			self.model.menu.surpriseBoxy.randomColor()
 			self.model.menu.surpriseBoxy.randomMusic()
 			self.model.backgroundColor = self.model.menu.surpriseBoxy.bgcolor
-			if len(self.model.menu.surpriseBoxy.music) == True: 
-				self.songlist = loadRandomSong(self.model.menu.surpriseBoxy.music)
-				print loadRandomSong(self.model.menu.surpriseBoxy.music)
+			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'ogg' not in self.model.menu.surpriseBoxy.music[-1]: 
+				self.model.menu.surpriseBoxy.music[-1] = loadRandomSong(self.model.menu.surpriseBoxy.music[-1])
 
 		if event.key == K_ESCAPE:
 			pygame.quit()
@@ -355,18 +352,16 @@ def centerObject(width_outter, height_outter, width_inner, height_inner):
 	return upper_left_corner
 
 def loadRandomSong(sheetMusic):
-	path = sheetMusic
-	for song in range(len(sheetMusic)):
-		if 'percussion' in sheetMusic[song] and 'base' in sheetMusic[song]:
-			path[song] = sheetMusic[song] + str(random.randrange(1,4)) + '.mid'
-		elif 'percussion' in sheetMusic[song] and 'extra' in sheetMusic[song]:
-			path[song] = sheetMusic[song] + str(random.randrange(1,9)) + '.mid'
-		elif 'accompaniment' in sheetMusic[song] and 'major' in sheetMusic[song]: 
-			path[song] = sheetMusic[song] + str(random.randrange(1,6)) + '.mid'
-		elif 'melody' in sheetMusic[song] and 'major' in sheetMusic[song]: 
-			path[song] = sheetMusic[song] + str(random.randrange(1,6)) + '.mid'
-		elif 'jazz' in sheetMusic[song]: 
-			path[song] = sheetMusic[song] + str(random.randrange(1,7)) + '.mid'
+	if 'percussion' in sheetMusic and 'base' in sheetMusic:
+		path = sheetMusic + str(random.randrange(1,4)) + '.ogg'
+	elif 'percussion' in sheetMusic and 'extra' in sheetMusic:
+		path = sheetMusic + str(random.randrange(1,9)) + '.ogg'
+	elif 'accompaniment' in sheetMusic and 'major' in sheetMusic: 
+		path = sheetMusic + str(random.randrange(1,6)) + '.ogg'
+	elif 'melody' in sheetMusic and 'major' in sheetMusic: 
+		path = sheetMusic + str(random.randrange(1,6)) + '.ogg'
+	elif 'jazz' in sheetMusic[song]: 
+		path = sheetMusic + str(random.randrange(1,7)) + '.ogg'
 	return path
 
 
