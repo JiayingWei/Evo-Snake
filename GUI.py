@@ -1,176 +1,434 @@
-import sys, pygame, os
+import sys, pygame, os, random, time
 from PIL import Image
 from pygame.locals import *
 
-class screen(object):
-    """ controls everything to do with the windows screen_size
-        attributes: width, height, color
-    """
-    def __init__(self, width = 600, height = 400, color = (0, 0, 0)):
-        self.width = width
-        self.height = height
-        self.color = color
-        self.display_resolution = pygame.display.Info()     #gets the resolution of your computer monitor
-        self.screen = pygame.display.set_mode((self.width, self.height))    #this statement might be causing problems with the centering during the 2nd minimize
+class EvoSnakeModel:
+	"""Encodes the game state
+	"""
+	def __init__(self,backgroundColor = (0,0,0),screenstate = 'Minimized', gamestate = 'Menuing'):
+		self.backgroundColor = backgroundColor
+		self.menu = ScreenGUI()
+		self.screenstate = screenstate	#state of the screen size (default vs fullscreen)
+		self.gamestate = gamestate	#state of the game (in menu vs in game)
+		self.timestart = time.time()
 
-    def loading_bar(self):
-        """ launches the loading_bar which gives the user a visual of how much of the game has loaded
-        """
-        os.environ['SDL_VIDEO_CENTERED'] = '1'  #centers the starting postion of the window
+class Boxy:
+	"""Encodes the state of a boxy in the game
+	"""
+	def __init__(self, color = (255, 255, 255), x = 0, y = 0, position = 1, stage = 1):
+		self.size = (20,20)
+		self.width = self.size[0]
+		self.height = self.size[1]
+		self.color = color
+		self.x = x
+		self.y = y
+		self.position = position
+		self.stage = 1
+		self.counter = 1
+		self.orchestra = []
 
-        pygame.font.init()
+	def move(self, dx, dy): #anna
+		"""Moves boxy dx and dy
+		"""
+		self.x = self.x + dx
+		self.y = self.y + dy
 
-        loading_bar_color = ( 255, 255, 255)
-        squarefont = pygame.font.Font('Square.ttf',50)
-        loading = squarefont.render("LOADING", True, loading_bar_color)
-        self.screen = pygame.display.set_mode((self.width, self.height))
-        loading_size = loading.get_size()
-        loading_boxy = eob.Boxy([20,20],loading_bar_color)  #creates a loading boxy
-        blit_loading = center_object(self.width, self.height, loading_size[0], loading_size[1])
-        self.screen.blit(loading, (blit_loading[0], blit_loading[1] - 2*loading_boxy.height))
-        pygame.display.update()
+	def menuToggle(self, direction, dy, position):
+		"""Encodes the state and location of the menu boxy
+		"""
+		if direction == 'up': 
+			if self.position == 1:
+				self.move(0, 2*dy)
+				self.position = 3
+			elif self.position == 2:
+				self.move(0, -dy)
+				self.position = 1
+			elif self.position == 3:
+				self.move(0, -dy)
+				self.position = 2
+		if direction == 'down':
+			if self.position == 1:
+				self.move(0, dy)
+				self.position = 2
+			elif self.position == 2:
+				self.move(0, dy)
+				self.position = 3
+			elif self.position == 3:
+				self.move(0, -2*dy)
+				self.position = 1
 
-        for i in range(0,10):
-            loading_boxy_start = center_object(self.width, self.height, loading_boxy.width * 10, loading_boxy.height)
-            loading_boxy_start = [loading_boxy_start[0] + loading_boxy.width * i, loading_boxy_start[1]]
-            pygame.draw.rect(self.screen, loading_boxy.color, (loading_boxy_start,loading_boxy.size),0)
-            pygame.display.update()
-            pygame.time.wait(300)
+	def randomMove(self, screenWidth, screenHeight):
+		"""Creates a random boxy on screen
+		"""
+		self.x = random.randrange(0, screenWidth, self.width)
+		self.y = random.randrange(0, screenHeight, self.width)
 
-    def minimize_screen(self):
-        """ minimizes Evo-Snake (should not change scale of the game)
-        """
-        pygame.font.init()
-        text_color = ( 255, 255, 255)
-        squarefont = pygame.font.Font('Square.ttf',40)
-        self.screen = pygame.display.set_mode((600, 400))
+	def randomColor(self):
+		if self.stage == 1:
+			stage1Colors = (255, 255, 255)
+			self.bgcolor = (0, 0, 0)
+			self.color = stage1Colors
+		if self.stage == 2:
+			stage2Colors = [(255, 204, 204), 
+							(255, 255, 204),
+							(204, 255, 204),
+							(204, 255, 255),
+							(229, 204, 255)]
+			self.bgcolor = (0, 0, 0)
+			self.color = stage2Colors[random.randrange(0,len(stage2Colors))]
+		if self.stage == 3:
+			stage3Colors = [(255, 153, 153), 
+							(255, 255, 153),
+							(153, 255, 153),
+							(153, 255, 255),
+							(204, 153, 255)]
+			self.bgcolor = [(51, 0, 0),
+							(0, 51, 0),
+							(0, 0, 51),
+							(51, 0, 25)]
+			self.bgcolor = self.bgcolor[random.randrange(0, len(self.bgcolor))]
+			self.color = stage3Colors[random.randrange(0,len(stage3Colors))]
+		if self.stage == 4:
+			stage4Colors = [(255, 102, 102), 
+							(255, 255, 102),
+							(102, 255, 102),
+							(102, 255, 255),
+							(178, 102, 255)]
+			self.bgcolor = [(153, 0, 0),
+							(0, 153, 0),
+							(0, 0, 153),
+							(153, 0, 153)]
+			self.bgcolor = self.bgcolor[random.randrange(0, len(self.bgcolor))]
+			self.color = stage4Colors[random.randrange(0,len(stage4Colors))]
 
-        full = squarefont.render("fullscreen", True, text_color)
-        full_size = full.get_size()
-        blit_full = center_object(600, 400, full_size[0], full_size[1])     #the centering mechanism depends on the center of the middle text item
-        self.screen.blit(full, (blit_full[0], blit_full[1]))
-
-        start = squarefont.render("start", True, text_color)
-        start_size = start.get_size()
-        blit_start = [blit_full[0], blit_full[1] - full.get_height()]
-        self.screen.blit(start, (blit_start[0], blit_start[1]))
-
-        quit = squarefont.render("quit", True, text_color)
-        quit_size = quit.get_size()
-        blit_quit = [blit_full[0], blit_full[1] + full.get_height()]
-        self.screen.blit(quit, (blit_quit[0], blit_quit[1]))
-        pygame.display.update()
-
-        toggle_boxy = evo.Boxy([20,20], (255, 255, 255))
-
-
-
-    def full_screen(self):
-        """ puts Evo-Snake into full_screen (should not change scale of the game)
-        """
-        self.width = self.display_resolution.current_w
-        self.height = self.display_resolution.current_h
-
-        pygame.font.init()
-        text_color = ( 255, 255, 255)
-        squarefont = pygame.font.Font('Square.ttf',40)
-        self.screen = pygame.display.set_mode((self.width, self.height),pygame.FULLSCREEN)
-
-        minimize = squarefont.render("minimize", True, text_color)
-        full_size = minimize.get_size()
-        blit_full = center_object(self.width, self.height, full_size[0], full_size[1])     #the centering mechanism depends on the center of the middle text item
-        self.screen.blit(minimize, (blit_full[0], blit_full[1]))
-
-        start = squarefont.render("start", True, text_color)
-        start_size = start.get_size()
-        blit_start = [blit_full[0], blit_full[1] - minimize.get_height()]
-        self.screen.blit(start, (blit_start[0], blit_start[1]))
-
-        quit = squarefont.render("quit", True, text_color)
-        quit_size = quit.get_size()
-        blit_quit = [blit_full[0], blit_full[1] + minimize.get_height()]
-        self.screen.blit(quit, (blit_quit[0], blit_quit[1]))
-        pygame.display.update()
-
-    def screen_color(self):
-        """ fills the screen with its own color
-        """
-        self.screen.fill(self.color)
+	def randomMusic(self, stage = 1, counter = 0):
+		if self.stage == 1:
+			if self.counter == 0:
+				self.counter = self.counter + 1
+			elif self.counter == 1:
+				self.music = []
+				self.counter = self.counter + 1
+			elif self.counter == 2:
+				self.music.append('music/percussion/base/')
+				self.counter = self.counter + 1
+			elif self.counter == 3:
+				self.counter = self.counter + 1
+			elif self.counter == 4:
+				self.music.append('music/percussion/extra/')
+				self.stage = self.stage + 1
+				self.counter = 0
+		if self.stage == 2:
+			if self.counter == 0:
+				self.counter = self.counter + 1
+			elif self.counter == 1:
+				self.counter = self.counter + 1
+			elif self.counter == 2:
+				self.music.append('music/accompaniment/major/')
+				self.counter = self.counter + 1
+			elif self.counter == 3:
+				self.counter = self.counter + 1		
+			elif self.counter == 4:
+				self.stage = self.stage + 1
+				self.counter = 0
+		if self.stage == 3:
+			if self.counter == 0:
+				self.counter = self.counter + 1
+			elif self.counter == 1:
+				self.counter = self.counter + 1
+			elif self.counter == 2:
+				self.music.append('music/melody/major/')
+				self.counter = self.counter + 1
+			elif self.counter == 3:
+				self.counter = self.counter + 1		
+			elif self.counter == 4:
+				self.stage = self.stage + 1
+				self.counter = 0
 
 
-def evo_container():
-    """contains the entire evo universe
-    """
-    pygame.init()
+class menuItem:
+	"""Encodes the state of a menu item in the game
+	"""
+	def __init__(self, text, menuWidth, menuHeight, dy = 0):
+		self.font = pygame.font.Font('Square.ttf',40)
+		self.text = self.font.render(text, True, (255, 255, 255))
+		self.size = self.text.get_size()
+		self.width = self.size[0]
+		self.height = self.size[1]
+		self.x = centerWidth(menuWidth, self.width)
+		self.y = centerHeight(menuHeight, self.height) + dy
 
-    pygame.display.set_caption('Evo-Snake')
 
-    evo_screen = screen()
-    evo_screen.screen_color()
-    evo_screen.loading_bar()
+class ScreenGUI:
+	"""Encodes the state of a ScreenGUI in the game
+	"""
+	def __init__(self, width = 600, height = 400, textColor = (255,255,255)):
+		self.width = width
+		self.height = height
+		self.textColor = (255, 255, 255)
+		self.font = pygame.font.Font('Square.ttf',40)
+		self.display_resolution = pygame.display.Info()
+		#self.boxlist = self.makeboxlist(10)
+		self.boxlist = []
+		self.modx = 20
+		self.mody = 0
 
-    pygame.time.wait(500)
+	def moveboxlist(self,boxlist):
+		self.boxlist.insert(0,Boxy( None, self.boxlist[0].x + self.modx, self.boxlist[0].y + self.mody , None, None))
+		self.boxlist.remove(self.boxlist[-1])
 
-    evo_screen.minimize_screen()
 
-    pygame.display.flip()
+	def makeboxlist(self):
+		startx = centerWidth(self.width, 20) + 10
+		starty = centerHeight(self.height, 20) + 10
+		for i in range (1):
+			self.sbox = Boxy(None, startx+20*i, starty, None, None)
+			self.boxlist.append(self.sbox)
 
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
-            elif event.type == KEYDOWN and event.key == K_f:
-                evo_screen.full_screen()
-            elif event.type == KEYDOWN and event.key == K_m:
-                evo_screen.minimize_screen()
 
-def check_size(imagepath):
-    """Returns the size in pixels of an image (width,height)
-    """
-    img = Image.open(imagepath)
-    width,height = img.size
-    return [width,height]
+	def moveboxlist(self,boxlist):
+		self.boxlist.insert(0,Boxy( None, self.boxlist[0].x + self.modx, self.boxlist[0].y + self.mody , None, None))
+		self.boxlist.remove(self.boxlist[-1])
 
-def find_center(width, height):
-    """Finds the center of an object with a width and height
-    """
-    originx = width/2
-    originy = height/2
-    return [originx,originy]
 
-def center_object(width_outter, height_outter, width_inner, height_inner):
-    """Returns the (x,y) location of the upper left corner of the item you want to center in a larger box
-    """
-    center_outter = find_center(width_outter, height_outter)
-    center_inner = find_center(width_inner, height_inner)
-    upper_left_corner = [center_outter[0] - center_inner[0], center_outter[1] - center_inner[1]]
-    return upper_left_corner
+	def Minimized(self):
+		"""Encodes the screenstate of a minimized screen in the game
+		"""
+		self.width = 600
+		self.height = 400
+
+		self.item1 = menuItem("fullscreen",self.width, self.height)
+		self.item2 = menuItem("start",self.width, self.height - 2*self.item1.height)
+		self.item3 = menuItem("quit",self.width, self.height + 2*self.item1.height)
+
+		self.boxy = Boxy()
+		self.boxy = Boxy((255,255,255), self.item1.x - 2*self.boxy.width, centerHeight(self.item2.height,  self.boxy.height) + self.item2.y)
+
+	def Fullscreen(self):
+		"""Encodes the state of a fullscreen in the game
+		"""
+		self.width = self.display_resolution.current_w
+		self.height = self.display_resolution.current_h
+
+		self.item1 = menuItem("minimize",self.width, self.height)
+		self.item2 = menuItem("start",self.width, self.height - 2*self.item1.height)
+		self.item3 = menuItem("quit",self.width, self.height + 2*self.item1.height)
+
+		self.boxy = Boxy()
+		self.boxy = Boxy((255,255,255), self.item1.x - 2*self.boxy.width, centerHeight(self.item2.height,  self.boxy.height) + self.item2.y)
+
+	def Loading(self):
+		"""Encodes the state of the loading screen in the game
+		"""
+		self.lboxy = Boxy()  #creates a Loading boxy
+		self.font = pygame.font.Font('Square.ttf',50)
+		self.text = self.font.render('Loading', True, self.textColor)
+		self.textsize = self.text.get_size()
+		self.textwidth = self.textsize[0]
+		self.textheight = self.textsize[1]
+		self.textx = centerWidth(self.width, self.textwidth)
+		self.texty = centerHeight(self.height, self.textheight) - 2 * self.boxy.height
+
+	def Gaming(self):
+		"""Encodes the state of the game as its running
+		"""
+		self.surpriseBoxy = Boxy()
+		self.surpriseBoxy.randomMove(self.width, self.height)
+		# if len(set(self.boxlist)) != len(self.boxlist):
+		# 	self.gamestate = 'Menuing'
+
+class EvoSnakeView:
+	"""A view of Evo-Snake rendered in a pygame window
+	"""
+	def __init__(self, model, controller):
+		self.model = model
+		self.controller = controller
+		self.numSongs = 0
+
+	def drawLoading(self):
+		"""Draws the loading bar
+		"""
+		os.environ['SDL_VIDEO_CENTERED'] = '1'  #centers the starting postion of the window
+		
+		self.model.menu.Minimized()
+		self.screen = pygame.display.set_mode((self.model.menu.width, self.model.menu.height))
+
+		self.screen.fill(model.backgroundColor)
+		self.model.menu.Loading()
+		self.screen.blit(self.model.menu.text, (self.model.menu.textx, self.model.menu.texty))
+
+		pygame.display.update()
+
+		# for i in range(0,10):
+		# 	loading_boxy_start = centerObject(self.model.menu.width, self.model.menu.height, self.model.menu.lboxy.width * 10, self.model.menu.lboxy.height)
+		# 	loading_boxy_start = [loading_boxy_start[0] + self.model.menu.lboxy.width * i, loading_boxy_start[1]]
+		# 	pygame.draw.rect(self.screen, self.model.menu.lboxy.color, (loading_boxy_start,self.model.menu.lboxy.size),0)
+		# 	pygame.display.update()
+		# 	pygame.time.wait(300)
+		
+	def drawMenu(self):	
+		"""Draws the main menu
+		"""
+		if self.model.screenstate == 'Minimized' and self.model.menu.width != 600:
+			self.model.menu.Minimized()
+			self.screen = pygame.display.set_mode((self.model.menu.width, self.model.menu.height))
+		elif self.model.screenstate == 'Fullscreen' and self.model.menu.width != self.model.menu.display_resolution.current_w:
+			self.model.menu.Fullscreen()
+			self.screen = pygame.display.set_mode((model.menu.width, model.menu.height), pygame.FULLSCREEN)
+
+		self.screen.fill(model.backgroundColor)
+
+		self.screen.blit(self.model.menu.item1.text, (self.model.menu.item1.x, self.model.menu.item1.y))
+		self.screen.blit(self.model.menu.item2.text, (self.model.menu.item1.x, self.model.menu.item2.y))
+		self.screen.blit(self.model.menu.item3.text, (self.model.menu.item1.x, self.model.menu.item3.y))
+
+		pygame.draw.rect(self.screen, self.model.menu.boxy.color, ((self.model.menu.boxy.x, self.model.menu.boxy.y), self.model.menu.boxy.size),0)
+
+		pygame.display.update()
+		self.model.menu.makeboxlist()
+
+	def drawGame(self):
+		"""Draws the game
+		"""
+		self.screen.fill(model.backgroundColor)
+
+		pygame.draw.rect(self.screen, self.model.menu.surpriseBoxy.color, ((self.model.menu.surpriseBoxy.x, self.model.menu.surpriseBoxy.y), self.model.menu.surpriseBoxy.size),0)
+		for i in range (len(self.model.menu.boxlist)):
+			pygame.draw.rect(self.screen, (0,255,0), ((self.model.menu.boxlist[i].x , self.model.menu.boxlist[i].y), self.model.menu.boxlist[i].size) ,0)
+		pygame.time.wait(50)
+		self.model.menu.moveboxlist(self.model.menu.boxlist)
+
+		if hasattr(self.model.menu.surpriseBoxy, 'music') == True and now - self.model.timestart > 6 and len(self.model.menu.surpriseBoxy.music) >= 1:
+			self.model.timestart = now
+			self.model.menu.surpriseBoxy.orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[-1]))
+			self.model.menu.surpriseBoxy.orchestra[-1].play(-1)
+		pygame.display.update()
+
+	#blits all the things
+
+class EvoSnakeController:
+	"""Defines all the inputs that Evo-Snake takes
+	"""
+	def __init__(self,model):
+		self.model = model
+
+	def handle_menu_key_event(self, event):
+		"""Handles all of the key events while in the main menu
+		"""
+		if event.type != KEYDOWN:
+			return
+		if event.key == pygame.K_UP or event.key == pygame.K_w:
+			self.model.menu.boxy.menuToggle('up', self.model.menu.item1.height, self.model.menu.boxy.position)
+		if event.key == pygame.K_DOWN or event.key == pygame.K_s:
+			self.model.menu.boxy.menuToggle('down', self.model.menu.item1.height, self.model.menu.boxy.position)
+		if event.key == pygame.K_a or event.key == pygame.K_d or event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_RETURN:
+			if self.model.menu.boxy.position == 1:
+				self.model.gamestate = 'Gaming'
+				self.model.menu.Gaming()
+			elif self.model.menu.boxy.position == 2 and self.model.screenstate == 'Minimized':
+				self.model.screenstate = 'Fullscreen'
+			elif self.model.menu.boxy.position == 2 and self.model.screenstate == 'Fullscreen':
+				self.model.screenstate = 'Minimized'
+			elif self.model.menu.boxy.position == 3:
+				pygame.quit()
+		if event.key == K_ESCAPE:
+			pygame.quit()
+
+	def handle_game_key_event(self,event):
+		"""Handles all of the key events while in Gaming mode
+		"""
+		if event.type != KEYDOWN:
+			return
+		if event.key == pygame.K_r:
+			self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
+			self.model.menu.surpriseBoxy.randomColor()
+			self.model.menu.surpriseBoxy.randomMusic()
+			self.model.backgroundColor = self.model.menu.surpriseBoxy.bgcolor
+			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'wav' not in self.model.menu.surpriseBoxy.music[-1]: 
+				self.model.menu.surpriseBoxy.music[-1] = self.loadRandomSong(self.model.menu.surpriseBoxy.music[-1])
+				print self.model.menu.surpriseBoxy.music[-1]
+		if event.key == K_ESCAPE:
+			pygame.quit()
+		if event.key == pygame.K_d:
+			self.model.menu.modx = 20
+			self.model.menu.mody = 0
+		if event.key == pygame.K_a:
+			self.model.menu.modx = -20
+			self.model.menu.mody = 0
+		if event.key == pygame.K_w:
+			self.model.menu.modx = 0
+			self.model.menu.mody = -20
+		if event.key == pygame.K_s:
+			self.model.menu.modx = 0
+			self.model.menu.mody = 20
+
+	def loadRandomSong(self, sheetMusic):
+		if 'percussion' in sheetMusic and 'base' in sheetMusic:
+			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
+		elif 'percussion' in sheetMusic and 'extra' in sheetMusic:
+			path = sheetMusic + str(random.randrange(1,9)) + '.wav'
+		elif 'accompaniment' in sheetMusic and 'major' in sheetMusic: 
+			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
+		elif 'melody' in sheetMusic and 'major' in sheetMusic: 
+			path = sheetMusic + str(random.randrange(1,10)) + '.wav'
+		elif 'jazz' in sheetMusic[song]: 
+			path = sheetMusic + str(random.randrange(1,7)) + '.wav'
+		return path
+
 
 def centerWidth(widthOuter, widthInner):
-    """Returns the x location of the upper left corner of the item you want to center horizontally in a larger item
-    """
-    return widthOuter/2 - widthInner/2
+	"""Returns the x location of the upper left corner of the item you want to center horizontally in a larger item
+	"""
+	return widthOuter/2 - widthInner/2
 
-def center_height(heightOuter, heightInner):
-    """Returns the y location of the upper left corner of the item you want to center vertically in a larger item
-    """
-    return heightOuter/2 - heightInner/2
+def centerHeight(heightOuter, heightInner):
+	"""Returns the y location of the upper left corner of the item you want to center vertically in a larger item
+	"""
+	return heightOuter/2 - heightInner/2
 
-evo_container()
+def find_center(width, height):
+	"""Finds the center of an object with a width and height
+	"""
+	originx = width/2
+	originy = height/2
+	return [originx,originy]
 
-def launch_menu():
-    """ launches the main menu of Evo-Snake
-    """
+def centerObject(width_outter, height_outter, width_inner, height_inner):
+	"""Returns the (x,y) location of the upper left corner of the item you want to center in a larger box
+	"""
+	center_outter = find_center(width_outter, height_outter)
+	center_inner = find_center(width_inner, height_inner)
+	upper_left_corner = [center_outter[0] - center_inner[0], center_outter[1] - center_inner[1]]
+	return upper_left_corner
 
-def toggle_options():
-    """ takes user input 'w,s' or 'up arrow key, down arrowkey' to toggle boxy between the menu options
-    it would make sense to make the boxy a class boxy(object): and write all of the toggle boxy behaviors in the class.
-    """
 
-def quit_game():
-    """ quits the game Evo-Snake
-    """
 
-def start_game():
-    """ starts the game Evo-Snake
-    """
+if __name__ == '__main__':
+	pygame.init()
+	pygame.mixer.init(channels = 8)
+	pygame.font.init()
+
+	model = EvoSnakeModel()
+	controller = EvoSnakeController(model)
+	view = EvoSnakeView(model,controller)
+
+	running = True
+
+	view.drawLoading()
+	view.drawMenu()
+	while running:
+		while model.gamestate == 'Menuing' and running:
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					running = False
+				if event.type == KEYDOWN:
+					controller.handle_menu_key_event(event)
+					view.drawMenu()
+		while model.gamestate == 'Gaming' and running:
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					running = False
+				if event.type == KEYDOWN:
+					controller.handle_game_key_event(event)
+			view.drawGame()
+
+	pygame.quit()
