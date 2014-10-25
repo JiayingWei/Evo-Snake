@@ -22,6 +22,7 @@ class Boxy:
 		self.color = color
 		self.x = x
 		self.y = y
+		self.pos = (self.x,self.y)
 		self.position = position
 		self.stage = 1
 		self.counter = 1
@@ -144,6 +145,44 @@ class Boxy:
 				self.stage = self.stage + 1
 				self.counter = 0
 
+class Snake:
+	"""Encodes the state of the snake in the game
+	"""
+	def __init__(self, length = 1, direction = 'right', starting = (0,0)):
+		self.length = length
+		self.direction = direction
+		self.boxlist = [Boxy((255,255,255), starting[0], starting[1])]
+		self.x = self.boxlist[0].x
+		self.y = self.boxlist[0].y
+
+	def move(self,direction):
+		""" Moves the snakes
+		"""
+		increment = 20
+		if direction == 'up':
+			self.boxlist.insert(0,Boxy(None, self.boxlist[0].x, self.boxlist[0].y - increment , None, None))
+		elif direction == 'down':
+			self.boxlist.insert(0,Boxy(None, self.boxlist[0].x, self.boxlist[0].y + increment , None, None))
+		elif direction == 'left':
+			self.boxlist.insert(0,Boxy(None, self.boxlist[0].x - increment, self.boxlist[0].y, None, None))
+		elif direction == 'right':
+			self.boxlist.insert(0,Boxy(None, self.boxlist[0].x + increment, self.boxlist[0].y, None, None))
+		self.boxlist.remove(self.boxlist[-1])
+
+	def nomnom(self, color = (255,255,255)):
+		""" Increases snake length when omnoms
+		"""
+		self.boxlist.append(Boxy(color))
+
+	def collisions(self,boxlist1,boxlist2):		#where boxlist1 is the snake and boxlist2 is whatever box we're checking against
+		""" Detects for different types of collisions
+		"""
+		for box in boxlist2:
+			for box in boxlist1:
+				if box.x == boxy.x and box.y == boxy.y:
+					return True
+				else:
+					return False
 
 class menuItem:
 	"""Encodes the state of a menu item in the game
@@ -171,24 +210,6 @@ class ScreenGUI:
 		self.boxlist = []
 		self.modx = 20
 		self.mody = 0
-
-	def moveboxlist(self,boxlist):
-		self.boxlist.insert(0,Boxy( None, self.boxlist[0].x + self.modx, self.boxlist[0].y + self.mody , None, None))
-		self.boxlist.remove(self.boxlist[-1])
-
-
-	def makeboxlist(self):
-		startx = centerWidth(self.width, 20) + 10
-		starty = centerHeight(self.height, 20) + 10
-		for i in range (1):
-			self.sbox = Boxy(None, startx+20*i, starty, None, None)
-			self.boxlist.append(self.sbox)
-
-
-	def moveboxlist(self,boxlist):
-		self.boxlist.insert(0,Boxy( None, self.boxlist[0].x + self.modx, self.boxlist[0].y + self.mody , None, None))
-		self.boxlist.remove(self.boxlist[-1])
-
 
 	def Minimized(self):
 		"""Encodes the screenstate of a minimized screen in the game
@@ -233,8 +254,7 @@ class ScreenGUI:
 		"""
 		self.surpriseBoxy = Boxy()
 		self.surpriseBoxy.randomMove(self.width, self.height)
-		# if len(set(self.boxlist)) != len(self.boxlist):
-		# 	self.gamestate = 'Menuing'
+		self.snake = Snake(starting = (self.boxy.x, self.boxy.y))
 
 class EvoSnakeView:
 	"""A view of Evo-Snake rendered in a pygame window
@@ -284,27 +304,29 @@ class EvoSnakeView:
 		pygame.draw.rect(self.screen, self.model.menu.boxy.color, ((self.model.menu.boxy.x, self.model.menu.boxy.y), self.model.menu.boxy.size),0)
 
 		pygame.display.update()
-		self.model.menu.makeboxlist()
-
+		
 	def drawGame(self):
 		"""Draws the game
 		"""
 		self.screen.fill(model.backgroundColor)
 
 		pygame.draw.rect(self.screen, self.model.menu.surpriseBoxy.color, ((self.model.menu.surpriseBoxy.x, self.model.menu.surpriseBoxy.y), self.model.menu.surpriseBoxy.size),0)
+		# for i in range(len(self.model.menu.snake.boxlist) - 1):
+		# pygame.draw.rect(self.screen, (0,255,0), ((self.model.menu.snake.boxlist[i].x , self.model.menu.snake.boxlist[i].y), self.model.menu.boxlist[i].size) ,0)
+
+		pygame.draw.rect(self.screen, (0,255,0), ((self.model.menu.snake.boxlist[0].x , self.model.menu.snake.boxlist[0].y), self.model.menu.snake.boxlist[0].size) ,0)
 		
-		for i in range (len(self.model.menu.boxlist)):
-			pygame.draw.rect(self.screen, (0,255,0), ((self.model.menu.boxlist[i].x , self.model.menu.boxlist[i].y), self.model.menu.boxlist[i].size) ,0)
 		pygame.time.wait(50)
-		self.model.menu.moveboxlist(self.model.menu.boxlist)
+		self.model.menu.snake.move(self.model.menu.snake.direction)
+
+		if self.model.menu.snake.collisions == True:
+			print 'duck'
 
 		if hasattr(self.model.menu.surpriseBoxy, 'music') == True and now - self.model.timestart > 6 and len(self.model.menu.surpriseBoxy.music) >= 1:
 			self.model.timestart = now
 			self.model.menu.surpriseBoxy.orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[-1]))
 			self.model.menu.surpriseBoxy.orchestra[-1].play(-1)
 		pygame.display.update()
-
-	#blits all the things
 
 class EvoSnakeController:
 	"""Defines all the inputs that Evo-Snake takes
@@ -347,21 +369,16 @@ class EvoSnakeController:
 			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'wav' not in self.model.menu.surpriseBoxy.music[-1]: 
 				self.model.menu.surpriseBoxy.music[-1] = self.loadRandomSong(self.model.menu.surpriseBoxy.music[-1])
 				print self.model.menu.surpriseBoxy.music[-1]
-
+		if event.key == pygame.K_a or event.key == pygame.K_LEFT and self.model.menu.snake.direction != 'right':
+			self.model.menu.snake.direction = 'left'
+		if event.key == pygame.K_d or event.key == pygame.K_RIGHT and self.model.menu.snake.direction != 'left':
+			self.model.menu.snake.direction = 'right'
+		if event.key == pygame.K_s or event.key == pygame.K_DOWN and self.model.menu.snake.direction != 'up':
+			self.model.menu.snake.direction = 'down'
+		if event.key == pygame.K_w or event.key == pygame.K_UP and self.model.menu.snake.direction != 'down':
+			self.model.menu.snake.direction = 'up'
 		if event.key == K_ESCAPE:
 			pygame.quit()
-		if event.key == pygame.K_d:
-			self.model.menu.modx = 20
-			self.model.menu.mody = 0
-		if event.key == pygame.K_a:
-			self.model.menu.modx = -20
-			self.model.menu.mody = 0
-		if event.key == pygame.K_w:
-			self.model.menu.modx = 0
-			self.model.menu.mody = -20
-		if event.key == pygame.K_s:
-			self.model.menu.modx = 0
-			self.model.menu.mody = 20
 
 	def loadRandomSong(self, sheetMusic):
 		if 'percussion' in sheetMusic and 'base' in sheetMusic:
