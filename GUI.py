@@ -174,15 +174,22 @@ class Snake:
 		"""
 		self.boxlist.append(Boxy(color))
 
-	def collisions(self,boxlist1,boxlist2):		#where boxlist1 is the snake and boxlist2 is whatever box we're checking against
+	def collisions(self,boxlist1,boxlist2,screenwidth,screenheight):		#where boxlist1 is the snake and boxlist2 is whatever box we're checking against
 		""" Detects for different types of collisions
 		"""
-		for box in boxlist2:
-			for box in boxlist1:
-				if box.x == boxy.x and box.y == boxy.y:
-					return True
-				else:
-					return False
+		if len(boxlist2) > 2:	#checks if the collision is snake self collision
+			for boxy in boxlist2:
+				for box in boxlist1:
+					if box != boxy and box.x == boxy.x and box.y == boxy.y:
+						return 'ouch'
+		elif boxlist1[0].x < 0 or boxlist1[0].x > screenwidth or boxlist1[0].y < 0 or boxlist1[0].y > screenheight: 
+			return 'ouch'
+		elif len(boxlist2) == 1 and boxlist1[0].x == boxlist2[0].x and boxlist1[0].y == boxlist2[0].y:
+			print boxlist2[0].color
+			self.nomnom(boxlist2[0].color)
+			return 'noms'
+		else:
+			return False
 
 class menuItem:
 	"""Encodes the state of a menu item in the game
@@ -206,10 +213,6 @@ class ScreenGUI:
 		self.textColor = (255, 255, 255)
 		self.font = pygame.font.Font('Square.ttf',40)
 		self.display_resolution = pygame.display.Info()
-		#self.boxlist = self.makeboxlist(10)
-		self.boxlist = []
-		self.modx = 20
-		self.mody = 0
 
 	def Minimized(self):
 		"""Encodes the screenstate of a minimized screen in the game
@@ -254,7 +257,7 @@ class ScreenGUI:
 		"""
 		self.surpriseBoxy = Boxy()
 		self.surpriseBoxy.randomMove(self.width, self.height)
-		self.snake = Snake(starting = (self.boxy.x, self.boxy.y))
+		self.snake = Snake(starting = (int(20 * round(float(self.boxy.x)/20)), int(20 * round(float(self.boxy.y)/20))))
 
 class EvoSnakeView:
 	"""A view of Evo-Snake rendered in a pygame window
@@ -263,6 +266,9 @@ class EvoSnakeView:
 		self.model = model
 		self.controller = controller
 		self.numSongs = 0
+		self.now = 0
+		self.snaketimer = self.model.timestart
+		self.colorlist = [(255,255,255)]
 
 	def drawLoading(self):
 		"""Draws the loading bar
@@ -295,7 +301,7 @@ class EvoSnakeView:
 			self.model.menu.Fullscreen()
 			self.screen = pygame.display.set_mode((model.menu.width, model.menu.height), pygame.FULLSCREEN)
 
-		self.screen.fill(model.backgroundColor)
+		self.screen.fill((0,0,0))
 
 		self.screen.blit(self.model.menu.item1.text, (self.model.menu.item1.x, self.model.menu.item1.y))
 		self.screen.blit(self.model.menu.item2.text, (self.model.menu.item1.x, self.model.menu.item2.y))
@@ -311,22 +317,44 @@ class EvoSnakeView:
 		self.screen.fill(model.backgroundColor)
 
 		pygame.draw.rect(self.screen, self.model.menu.surpriseBoxy.color, ((self.model.menu.surpriseBoxy.x, self.model.menu.surpriseBoxy.y), self.model.menu.surpriseBoxy.size),0)
-		# for i in range(len(self.model.menu.snake.boxlist) - 1):
-		# pygame.draw.rect(self.screen, (0,255,0), ((self.model.menu.snake.boxlist[i].x , self.model.menu.snake.boxlist[i].y), self.model.menu.boxlist[i].size) ,0)
 
-		pygame.draw.rect(self.screen, (0,255,0), ((self.model.menu.snake.boxlist[0].x , self.model.menu.snake.boxlist[0].y), self.model.menu.snake.boxlist[0].size) ,0)
-		
-		pygame.time.wait(50)
+		#below draws the snake boxies
+		for box in range(len(self.model.menu.snake.boxlist) - 1):
+			pygame.draw.rect(self.screen, self.colorlist[box] , ((self.model.menu.snake.boxlist[box].x , self.model.menu.snake.boxlist[box].y), self.model.menu.snake.boxlist[box].size) ,0)
+		pygame.time.delay(100)
 		self.model.menu.snake.move(self.model.menu.snake.direction)
 
-		if self.model.menu.snake.collisions == True:
-			print 'duck'
-
-		if hasattr(self.model.menu.surpriseBoxy, 'music') == True and now - self.model.timestart > 6 and len(self.model.menu.surpriseBoxy.music) >= 1:
-			self.model.timestart = now
-			self.model.menu.surpriseBoxy.orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[-1]))
-			self.model.menu.surpriseBoxy.orchestra[-1].play(-1)
+		if self.model.menu.snake.collisions(self.model.menu.snake.boxlist, self.model.menu.snake.boxlist, self.model.menu.width, self.model.menu.height) == 'ouch':
+			self.model.gamestate = 'Menuing'
+			self.drawMenu()
+			#below part checks for food collisions
+		elif self.model.menu.snake.collisions(self.model.menu.snake.boxlist, [self.model.menu.surpriseBoxy], self.model.menu.width, self.model.menu.height) == 'noms':
+			self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
+			self.colorlist.append(self.model.menu.surpriseBoxy.color)
+			self.model.menu.surpriseBoxy.randomColor()
+			self.model.menu.surpriseBoxy.randomMusic()
+			self.model.backgroundColor = self.model.menu.surpriseBoxy.bgcolor
+			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'wav' not in self.model.menu.surpriseBoxy.music[-1]: 
+				self.model.menu.surpriseBoxy.music[-1] = self.loadRandomSong(self.model.menu.surpriseBoxy.music[-1])
+				print self.model.menu.surpriseBoxy.music[-1]
+			if hasattr(self.model.menu.surpriseBoxy, 'music') == True and now - self.model.timestart > 6 and len(self.model.menu.surpriseBoxy.music) >= 1:
+				self.model.timestart = now
+				self.model.menu.surpriseBoxy.orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[-1]))
+				self.model.menu.surpriseBoxy.orchestra[-1].play(-1)
 		pygame.display.update()
+
+	def loadRandomSong(self, sheetMusic):
+		if 'percussion' in sheetMusic and 'base' in sheetMusic:
+			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
+		elif 'percussion' in sheetMusic and 'extra' in sheetMusic:
+			path = sheetMusic + str(random.randrange(1,9)) + '.wav'
+		elif 'accompaniment' in sheetMusic and 'major' in sheetMusic: 
+			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
+		elif 'melody' in sheetMusic and 'major' in sheetMusic: 
+			path = sheetMusic + str(random.randrange(1,10)) + '.wav'
+		elif 'jazz' in sheetMusic[song]: 
+			path = sheetMusic + str(random.randrange(1,7)) + '.wav'
+		return path
 
 class EvoSnakeController:
 	"""Defines all the inputs that Evo-Snake takes
@@ -359,16 +387,9 @@ class EvoSnakeController:
 	def handle_game_key_event(self,event):
 		"""Handles all of the key events while in Gaming mode
 		"""
+
 		if event.type != KEYDOWN:
 			return
-		if event.key == pygame.K_r:
-			self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
-			self.model.menu.surpriseBoxy.randomColor()
-			self.model.menu.surpriseBoxy.randomMusic()
-			self.model.backgroundColor = self.model.menu.surpriseBoxy.bgcolor
-			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'wav' not in self.model.menu.surpriseBoxy.music[-1]: 
-				self.model.menu.surpriseBoxy.music[-1] = self.loadRandomSong(self.model.menu.surpriseBoxy.music[-1])
-				print self.model.menu.surpriseBoxy.music[-1]
 		if event.key == pygame.K_a or event.key == pygame.K_LEFT and self.model.menu.snake.direction != 'right':
 			self.model.menu.snake.direction = 'left'
 		if event.key == pygame.K_d or event.key == pygame.K_RIGHT and self.model.menu.snake.direction != 'left':
@@ -380,18 +401,7 @@ class EvoSnakeController:
 		if event.key == K_ESCAPE:
 			pygame.quit()
 
-	def loadRandomSong(self, sheetMusic):
-		if 'percussion' in sheetMusic and 'base' in sheetMusic:
-			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
-		elif 'percussion' in sheetMusic and 'extra' in sheetMusic:
-			path = sheetMusic + str(random.randrange(1,9)) + '.wav'
-		elif 'accompaniment' in sheetMusic and 'major' in sheetMusic: 
-			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
-		elif 'melody' in sheetMusic and 'major' in sheetMusic: 
-			path = sheetMusic + str(random.randrange(1,10)) + '.wav'
-		elif 'jazz' in sheetMusic[song]: 
-			path = sheetMusic + str(random.randrange(1,7)) + '.wav'
-		return path
+
 
 
 def centerWidth(widthOuter, widthInner):
@@ -443,6 +453,7 @@ if __name__ == '__main__':
 					controller.handle_menu_key_event(event)
 					view.drawMenu()
 		while model.gamestate == 'Gaming' and running:
+			now = time.time()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					running = False
