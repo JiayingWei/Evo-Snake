@@ -348,7 +348,7 @@ class EvoSnakeView:
 		pygame.time.delay(100)
 		self.model.menu.snake.move(self.model.menu.snake.direction)
 
-		#resets to menu states
+		#resets to menu states fi there is a collision
 		if self.model.menu.snake.collisions(self.model.menu.snake.boxlist, self.model.menu.snake.boxlist, self.model.menu.width, self.model.menu.height) == 'ouch':
 			self.model.gamestate = 'Menuing'
 			self.drawMenu()
