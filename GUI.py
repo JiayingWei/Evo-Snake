@@ -110,12 +110,19 @@ class Boxy:
 				self.music = []
 				self.counter = self.counter + 1
 			elif self.counter == 2:
-				self.music.append('music/percussion/base/')
 				self.counter = self.counter + 1
 			elif self.counter == 3:
 				self.counter = self.counter + 1
 			elif self.counter == 4:
-				self.music.append('music/percussion/extra/')
+				self.counter = self.counter + 1
+			elif self.counter == 5:
+				self.counter = self.counter + 1
+			elif self.counter == 6:
+				self.music.append('music/percussion/base/')
+				self.counter = self.counter + 1
+			elif self.counter == 7:
+				self.counter = self.counter + 1
+			elif self.counter == 8:
 				self.stage = self.stage + 1
 				self.counter = 0
 		if self.stage == 2:
@@ -124,11 +131,20 @@ class Boxy:
 			elif self.counter == 1:
 				self.counter = self.counter + 1
 			elif self.counter == 2:
-				self.music.append('music/accompaniment/major/')
 				self.counter = self.counter + 1
 			elif self.counter == 3:
-				self.counter = self.counter + 1		
+				self.counter = self.counter + 1
 			elif self.counter == 4:
+				self.music.append('music/percussion/extra/')
+				self.counter = self.counter + 1
+			elif self.counter == 5:
+				self.counter = self.counter + 1
+			elif self.counter == 6:
+				self.counter = self.counter + 1
+			elif self.counter == 7:
+				self.counter = self.counter + 1
+			elif self.counter == 8:
+				self.music.append('music/accompaniment/major/')
 				self.stage = self.stage + 1
 				self.counter = 0
 		if self.stage == 3:
@@ -137,11 +153,19 @@ class Boxy:
 			elif self.counter == 1:
 				self.counter = self.counter + 1
 			elif self.counter == 2:
-				self.music.append('music/melody/major/')
 				self.counter = self.counter + 1
 			elif self.counter == 3:
-				self.counter = self.counter + 1		
+				self.counter = self.counter + 1
 			elif self.counter == 4:
+				self.counter = self.counter + 1
+			elif self.counter == 5:
+				self.counter = self.counter + 1
+			elif self.counter == 6:
+				self.counter = self.counter + 1
+			elif self.counter == 7:
+				self.music.append('music/melody/major/')
+				self.counter = self.counter + 1
+			elif self.counter == 8:
 				self.stage = self.stage + 1
 				self.counter = 0
 
@@ -177,15 +201,14 @@ class Snake:
 	def collisions(self,boxlist1,boxlist2,screenwidth,screenheight):		#where boxlist1 is the snake and boxlist2 is whatever box we're checking against
 		""" Detects for different types of collisions
 		"""
-		if len(boxlist2) > 2:	#checks if the collision is snake self collision
+		if boxlist1[0].x < 0 or boxlist1[0].x + 20 > screenwidth or boxlist1[0].y < 0 or boxlist1[0].y > screenheight: 
+			return 'ouch'
+		elif len(boxlist2) > 2:	#checks if the collision is snake self collision
 			for boxy in boxlist2:
 				for box in boxlist1:
 					if box != boxy and box.x == boxy.x and box.y == boxy.y:
 						return 'ouch'
-		elif boxlist1[0].x < 0 or boxlist1[0].x > screenwidth or boxlist1[0].y < 0 or boxlist1[0].y > screenheight: 
-			return 'ouch'
 		elif len(boxlist2) == 1 and boxlist1[0].x == boxlist2[0].x and boxlist1[0].y == boxlist2[0].y:
-			print boxlist2[0].color
 			self.nomnom(boxlist2[0].color)
 			return 'noms'
 		else:
@@ -207,7 +230,7 @@ class menuItem:
 class ScreenGUI:
 	"""Encodes the state of a ScreenGUI in the game
 	"""
-	def __init__(self, width = 600, height = 400, textColor = (255,255,255)):
+	def __init__(self, width = 400, height = 400, textColor = (255,255,255)):
 		self.width = width
 		self.height = height
 		self.textColor = (255, 255, 255)
@@ -217,7 +240,7 @@ class ScreenGUI:
 	def Minimized(self):
 		"""Encodes the screenstate of a minimized screen in the game
 		"""
-		self.width = 600
+		self.width = 400
 		self.height = 400
 
 		self.item1 = menuItem("fullscreen",self.width, self.height)
@@ -284,17 +307,18 @@ class EvoSnakeView:
 
 		pygame.display.update()
 
-		# for i in range(0,10):
-		# 	loading_boxy_start = centerObject(self.model.menu.width, self.model.menu.height, self.model.menu.lboxy.width * 10, self.model.menu.lboxy.height)
-		# 	loading_boxy_start = [loading_boxy_start[0] + self.model.menu.lboxy.width * i, loading_boxy_start[1]]
-		# 	pygame.draw.rect(self.screen, self.model.menu.lboxy.color, (loading_boxy_start,self.model.menu.lboxy.size),0)
-		# 	pygame.display.update()
-		# 	pygame.time.wait(300)
+		for i in range(0,10):
+			loading_boxy_start = centerObject(self.model.menu.width, self.model.menu.height, self.model.menu.lboxy.width * 10, self.model.menu.lboxy.height)
+			loading_boxy_start = [loading_boxy_start[0] + self.model.menu.lboxy.width * i, loading_boxy_start[1]]
+			pygame.draw.rect(self.screen, self.model.menu.lboxy.color, (loading_boxy_start,self.model.menu.lboxy.size),0)
+			pygame.display.update()
+			pygame.time.wait(300)
 		
 	def drawMenu(self):	
 		"""Draws the main menu
 		"""
-		if self.model.screenstate == 'Minimized' and self.model.menu.width != 600:
+
+		if self.model.screenstate == 'Minimized' and self.model.menu.width != 400:
 			self.model.menu.Minimized()
 			self.screen = pygame.display.set_mode((self.model.menu.width, self.model.menu.height))
 		elif self.model.screenstate == 'Fullscreen' and self.model.menu.width != self.model.menu.display_resolution.current_w:
@@ -324,10 +348,25 @@ class EvoSnakeView:
 		pygame.time.delay(100)
 		self.model.menu.snake.move(self.model.menu.snake.direction)
 
+		#resets to menu states
 		if self.model.menu.snake.collisions(self.model.menu.snake.boxlist, self.model.menu.snake.boxlist, self.model.menu.width, self.model.menu.height) == 'ouch':
 			self.model.gamestate = 'Menuing'
 			self.drawMenu()
-			#below part checks for food collisions
+			self.model.menu.surpriseBoxy.stage = 1
+			self.model.menu.surpriseBoxy.counter = 0
+			self.model.backgroundColor = (0,0,0)
+			self.model.menu.surpriseBoxy.music = []
+			self.model.menu.surpriseBoxy.orchestra = []
+			self.colorlist = [(255,255,255)]
+			pygame.mixer.fadeout(500)
+
+		#checks for whether or not there is music queded up 
+		if hasattr(self.model.menu.surpriseBoxy, 'music') == True and now - self.model.timestart > 6 and len(self.model.menu.surpriseBoxy.music) >= 1:
+			self.model.timestart = now
+			self.model.menu.surpriseBoxy.orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[-1]))
+			pygame.mixer.Channel(len(self.model.menu.surpriseBoxy.music)).play(self.model.menu.surpriseBoxy.orchestra[-1],-1)
+			
+		#checks for food collisions
 		elif self.model.menu.snake.collisions(self.model.menu.snake.boxlist, [self.model.menu.surpriseBoxy], self.model.menu.width, self.model.menu.height) == 'noms':
 			self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
 			self.colorlist.append(self.model.menu.surpriseBoxy.color)
@@ -337,10 +376,6 @@ class EvoSnakeView:
 			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'wav' not in self.model.menu.surpriseBoxy.music[-1]: 
 				self.model.menu.surpriseBoxy.music[-1] = self.loadRandomSong(self.model.menu.surpriseBoxy.music[-1])
 				print self.model.menu.surpriseBoxy.music[-1]
-			if hasattr(self.model.menu.surpriseBoxy, 'music') == True and now - self.model.timestart > 6 and len(self.model.menu.surpriseBoxy.music) >= 1:
-				self.model.timestart = now
-				self.model.menu.surpriseBoxy.orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[-1]))
-				self.model.menu.surpriseBoxy.orchestra[-1].play(-1)
 		pygame.display.update()
 
 	def loadRandomSong(self, sheetMusic):
