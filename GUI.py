@@ -281,6 +281,12 @@ class ScreenGUI:
 		self.surpriseBoxy = Boxy()
 		self.surpriseBoxy.randomMove(self.width, self.height)
 		self.snake = Snake(starting = (int(20 * round(float(self.boxy.x)/20)), int(20 * round(float(self.boxy.y)/20))))
+		coordlist = []
+		for i in range (len(self.snake.boxlist)):
+		 coordlist.append((self.snake.boxlist[i].x,self.snake.boxlist[i].y))
+		print coordlist
+		# if (surpriseBoxy.x,surpriseBoxy.y) in Snake
+		# 	self.surpriseBoxy.randomMove(self.width, self.height)
 
 class EvoSnakeView:
 	"""A view of Evo-Snake rendered in a pygame window
@@ -312,7 +318,7 @@ class EvoSnakeView:
 			loading_boxy_start = [loading_boxy_start[0] + self.model.menu.lboxy.width * i, loading_boxy_start[1]]
 			pygame.draw.rect(self.screen, self.model.menu.lboxy.color, (loading_boxy_start,self.model.menu.lboxy.size),0)
 			pygame.display.update()
-			pygame.time.wait(300)
+			pygame.time.wait(100)
 		
 	def drawMenu(self):	
 		"""Draws the main menu
@@ -369,6 +375,13 @@ class EvoSnakeView:
 		#checks for food collisions
 		elif self.model.menu.snake.collisions(self.model.menu.snake.boxlist, [self.model.menu.surpriseBoxy], self.model.menu.width, self.model.menu.height) == 'noms':
 			self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
+			coordlist = []
+			for i in range (len(self.model.menu.snake.boxlist)):
+				coordlist.append((self.model.menu.snake.boxlist[i].x,self.model.menu.snake.boxlist[i].y))
+			print coordlist
+			if (self.model.menu.surpriseBoxy.x,self.model.menu.surpriseBoxy.y) in coordlist:
+				self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
+
 			self.colorlist.append(self.model.menu.surpriseBoxy.color)
 			self.model.menu.surpriseBoxy.randomColor()
 			self.model.menu.surpriseBoxy.randomMusic()
