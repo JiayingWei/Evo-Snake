@@ -356,7 +356,7 @@ class EvoSnakeView:
 
 		#resets to menu states fi there is a collision
 		if self.model.menu.snake.collisions(self.model.menu.snake.boxlist, self.model.menu.snake.boxlist, self.model.menu.width, self.model.menu.height) == 'ouch':
-			self.model.gamestate = 'Menuing'
+			temt self.model.gamestate = 'Menuing'
 			self.drawMenu()
 			self.model.menu.surpriseBoxy.stage = 1
 			self.model.menu.surpriseBoxy.counter = 0
@@ -376,12 +376,12 @@ class EvoSnakeView:
 		elif self.model.menu.snake.collisions(self.model.menu.snake.boxlist, [self.model.menu.surpriseBoxy], self.model.menu.width, self.model.menu.height) == 'noms':
 			self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
 			coordlist = []
-			# for i in range (len(self.model.menu.snake.boxlist)):
-			# 	coordlist.append((self.model.menu.snake.boxlist[i].x,self.model.menu.snake.boxlist[i].y))
-			# print coordlist
+			for i in range (len(self.model.menu.snake.boxlist)):
+				coordlist.append((self.model.menu.snake.boxlist[i].x,self.model.menu.snake.boxlist[i].y))
+			print coordlist
 			if (self.model.menu.surpriseBoxy.x,self.model.menu.surpriseBoxy.y) in coordlist:
 				self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height)
-				
+
 			self.colorlist.append(self.model.menu.surpriseBoxy.color)
 			self.model.menu.surpriseBoxy.randomColor()
 			self.model.menu.surpriseBoxy.randomMusic()
