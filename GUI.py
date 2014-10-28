@@ -356,7 +356,7 @@ class EvoSnakeView:
 
 		#resets to menu states fi there is a collision
 		if self.model.menu.snake.collisions(self.model.menu.snake.boxlist, self.model.menu.snake.boxlist, self.model.menu.width, self.model.menu.height) == 'ouch':
-			temt self.model.gamestate = 'Menuing'
+			self.model.gamestate = 'Menuing'
 			self.drawMenu()
 			self.model.menu.surpriseBoxy.stage = 1
 			self.model.menu.surpriseBoxy.counter = 0
