@@ -9,7 +9,7 @@ class EvoSnakeModel:
 		self.backgroundColor = backgroundColor
 		self.menu = ScreenGUI()
 		self.screenstate = screenstate	#state of the screen size (default vs fullscreen)
-		self.gamestate = gamestate	#state of the game (in menu vs in game)
+		self.gamestate = gamestate		#state of the game (in menu vs in game)
 		self.timestart = time.time()
 
 class Boxy:
@@ -65,6 +65,8 @@ class Boxy:
 		self.y = random.randrange(0, screenHeight, self.width)
 
 	def randomColor(self):
+		"""picks a random color for the surprise boxy and a random background color depending on the current stage
+		"""
 		if self.stage == 1:
 			stage1Colors = (255, 255, 255)
 			self.bgcolor = (0, 0, 0)
@@ -103,6 +105,8 @@ class Boxy:
 			self.color = stage4Colors[random.randrange(0,len(stage4Colors))]
 
 	def randomMusic(self, stage = 1, counter = 0):
+		"""Picks a random music chuck at the appropriate time
+		"""
 		if self.stage == 1:
 			if self.counter == 0:
 				self.counter = self.counter + 1
@@ -327,10 +331,11 @@ class EvoSnakeView:
 
 		self.screen.fill((0,0,0))
 
-		self.screen.blit(self.model.menu.item1.text, (self.model.menu.item1.x, self.model.menu.item1.y))
+		self.screen.blit(self.model.menu.item1.text, (self.model.menu.item1.x, self.model.menu.item1.y))	#creates the menu texts
 		self.screen.blit(self.model.menu.item2.text, (self.model.menu.item1.x, self.model.menu.item2.y))
 		self.screen.blit(self.model.menu.item3.text, (self.model.menu.item1.x, self.model.menu.item3.y))
 
+		#creates the toggle boxy
 		pygame.draw.rect(self.screen, self.model.menu.boxy.color, ((self.model.menu.boxy.x, self.model.menu.boxy.y), self.model.menu.boxy.size),0)
 
 		pygame.display.update()
@@ -360,7 +365,7 @@ class EvoSnakeView:
 			self.colorlist = [(255,255,255)]
 			pygame.mixer.fadeout(500)
 
-		#checks for whether or not there is music queded up 
+		#checks for whether or not there is music queued up 
 		if hasattr(self.model.menu.surpriseBoxy, 'music') == True and now - self.model.timestart > 6 and len(self.model.menu.surpriseBoxy.music) >= 1:
 			self.model.timestart = now
 			self.model.menu.surpriseBoxy.orchestra.append(pygame.mixer.Sound(self.model.menu.surpriseBoxy.music[-1]))
@@ -376,15 +381,17 @@ class EvoSnakeView:
 				self.model.menu.surpriseBoxy.randomMove(self.model.menu.width, self.model.menu.height) #moves it randomly again if it is
 
 			self.colorlist.append(self.model.menu.surpriseBoxy.color)
-			self.model.menu.surpriseBoxy.randomColor()
+			self.model.menu.surpriseBoxy.randomColor()			
 			self.model.menu.surpriseBoxy.randomMusic()
 			self.model.backgroundColor = self.model.menu.surpriseBoxy.bgcolor
-			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'wav' not in self.model.menu.surpriseBoxy.music[-1]: 
+			if len(self.model.menu.surpriseBoxy.music) >= 1 and 'wav' not in self.model.menu.surpriseBoxy.music[-1]: 	#load the music
 				self.model.menu.surpriseBoxy.music[-1] = self.loadRandomSong(self.model.menu.surpriseBoxy.music[-1])
 				print self.model.menu.surpriseBoxy.music[-1]
 		pygame.display.update()
 
 	def loadRandomSong(self, sheetMusic):
+		"""picks a random song to play and adds the right extensions
+		"""
 		if 'percussion' in sheetMusic and 'base' in sheetMusic:
 			path = sheetMusic + str(random.randrange(1,4)) + '.wav'
 		elif 'percussion' in sheetMusic and 'extra' in sheetMusic:
@@ -442,9 +449,6 @@ class EvoSnakeController:
 		if event.key == K_ESCAPE:
 			pygame.quit()
 
-
-
-
 def centerWidth(widthOuter, widthInner):
 	"""Returns the x location of the upper left corner of the item you want to center horizontally in a larger item
 	"""
@@ -469,8 +473,6 @@ def centerObject(width_outter, height_outter, width_inner, height_inner):
 	center_inner = find_center(width_inner, height_inner)
 	upper_left_corner = [center_outter[0] - center_inner[0], center_outter[1] - center_inner[1]]
 	return upper_left_corner
-
-
 
 if __name__ == '__main__':
 	pygame.init()
